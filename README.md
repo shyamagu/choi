@@ -21,3 +21,27 @@ if you want to change PORT, please note your PORT in .env file
 PORT=5000
 ````
 
+### sample dockerfile (just sample, using git clone in dockerfile...)
+````
+FROM node:14-alpine
+
+# install Git & Bash
+RUN apk update && apk add git && apk add bash
+
+# get choi
+RUN git clone https://github.com/shyamagu/choi.git
+
+WORKDIR /choi
+
+# yarn install
+RUN yarn install
+
+EXPOSE 3000
+
+CMD ["yarn","start"]
+````
+
+### for Windows user
+
+- Don't forget to open port at Firewall security
+
