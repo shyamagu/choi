@@ -1,0 +1,134 @@
+<html>
+
+<head>
+  <title>choi</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
+</head>
+
+<body>
+  <div class="head">
+    <h1>choi</h1>
+    <p>Emulate relay a http request to evaluate infrastracture</p>
+  </div>
+  <!-- Vue html -->
+  <div class= "main" id="app">
+    <!-- Send Request button and params -->
+    <div class="startbuttonarea">
+      <span>{{statusMessage}}</span>
+      <button v-if="processing" class="startbutton"><div class="loader"></div></button>
+      <button v-if="!processing" class="startbutton" v-on:click="startChoi">Send Request</button>
+      <div class="paramtitle">number of times <input class="paramfield" type="number" v-model="param.num" placeholder="the number of times"/></div>
+      <div class="paramtitle">interval (ms)   <input class="paramfield" type="number" v-model="param.interval" placeholder="ex) 100"/></div>
+    </div>
+    <div v-if="errorMessage" class="error">{{errorMessage}}</div>
+    <!-- Http request relay settings -->
+    <div class="relay" v-for="(relay,index) in relays">
+      <div class="relayborder">
+        <div class="relaytitle">
+          <p class="idtitle"># STEP {{++index}}</p>
+          <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
+        </div>
+        <table class="relaysetting">
+          <tr><td class="urltitle">uri</td><td><input class="urlinput" v-model="relay.url" placeholder="http://host:port/path"/></td></td></tr>
+          <tr v-if="!relay.timeout"><td>delay</td><td><input v-model="relay.delay" placeholder="delay time ex) 3000"/>(ms)</td></td></tr>
+          <tr v-if="!relay.timeout"><td>error</td><td><input name="error" type="checkbox" v-model="relay.error"/></td></td></tr>
+          <tr v-if="relay.error"><td>&nbsp;</td><td>code <input name="errorcode" type="number" v-model="relay.code"/></td></td></tr>
+          <tr v-if="!relay.error"><td>timeout</td><td><input name="timeout" type="checkbox" v-model="relay.timeout"/></td></td></tr>
+        </table>
+        <div v-bind:id="relay.id" class="result">{{relay.result}}</div>
+      </div>
+      <div class="arrow"></div>
+    </div>
+    <!-- Add http request setting -->
+    <button class="addbutton" v-on:click="addRelay">+ Add</button>
+  </div>
+</body>
+
+<script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      id: 3, //initial settings use 1,2
+      relays:[
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, result:"-----"},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, result:"-----"},
+      ],
+      param:{num:1,interval:1000},
+      statusMessage:"",
+      errorMessage:"",
+      processing:false, // to show loading
+    },
+    methods:{
+      // Add relay setting
+      addRelay: function(){
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, result:"-----"})
+        this.id++;
+      },
+      // Send request
+      startChoi: function(){
+
+        //validation
+        var urlEmpties = this.relays.filter(relay=> relay.url == "")
+        if(urlEmpties.length > 0){
+          this.errorMessage = "Enter URI"
+          return
+        }
+
+        this.processing=true;
+        let count=0;
+        this.statusMessage = "";
+        this.errorMessage = "";
+
+        //post request with interval
+        const intervalId = setInterval(function(){
+          let first = this.relays[0]
+          fetch(first.url,{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+            },
+            body:JSON.stringify(this.relays)
+          })
+          .then(response => response.json())
+          .then(data=>{
+            this.statusMessage = "Succuess "+count+"/"+this.param.num
+            // Show the result for each setting
+            for(i in data){
+              let result = data[i]
+              for(j in this.relays){
+                if(result.id === this.relays[j].id){
+                  this.relays[j].result = "return:"+result.code+", elapsed time:"+result.elapsed+"(ms)"
+                  if(result.error){
+                    this.errorMessage = result.error
+                  }
+                  document.getElementById(result.id).style.background = "#EE82EE";
+                  setTimeout(()=>{
+                    document.getElementById(result.id).style.background = "#FFF"
+                  },300);
+                }
+              }
+            }
+            this.processing=false;
+          })
+          .catch((error)=>{
+            this.errorMessage = error
+            this.processing=false;
+          });
+
+          count++;
+          if(count >= this.param.num){
+            clearInterval(intervalId)
+          }
+        }.bind(this),this.param.interval)
+      },
+      // Delete a relay setting
+      deleteRelay: function(deleteid){
+        this.relays = this.relays.filter(relay=> relay.id != deleteid)
+      }
+    }
+  });
+</script>
+</html>
