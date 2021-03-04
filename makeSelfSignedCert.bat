@@ -1,3 +1,4 @@
+mkdir key
 cd key
 openssl genrsa 2048 > private_key.pem
 openssl req -new -key private_key.pem > server.csr
