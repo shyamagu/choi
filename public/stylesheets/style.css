@@ -5,7 +5,7 @@ body {
 }
 
 .head {
-  padding: 10px 0px 10px 0px;
+  padding: 0.1em 0em 0.1em 0em;
   width :100%;
   text-align: center;
   background-color: blueviolet;
@@ -13,8 +13,9 @@ body {
 }
 
 .main {
-  padding: 10px 0px 10px 0px;
-  width :60%;
+  padding: 15px 0px 10px 0px;
+  width :70%;
+  min-width: 600px;
   margin:auto;
   text-align: center;
   background-color: #FFF;
@@ -22,8 +23,8 @@ body {
 
 .relay {
   margin:auto;
-  width: 60%;
-  min-width: 400px;
+  width: 70%;
+  min-width: 600px;
 }
 
 .relayborder{
@@ -31,7 +32,28 @@ body {
   border-width: 2px;
   border-color: #000;
   margin-bottom: 0px;
+}
 
+.resultcolor{
+  background-color: #fff462;
+}
+
+.callgetborder{
+  width:450px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #BF9DE0;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.callresultdetail{
+  font-size: 12px;
+  width:450px;
+}
+
+.prefield{
+  width:450px;
 }
 
 .relaytitle{
@@ -67,15 +89,29 @@ body {
 }
 
 .urlinput{
-  width:100%;
-  min-width:250px;
+  width:300px;
+}
+
+.numberinput{
+  width:70px;
+}
+
+.addcallbutton{
+  color:#FFF;
+  background-color:blueviolet;
+  border: none;  /* 枠線を消す */
+  font-size: 16px;
+}
+
+.addcallbutton:active{
+  background-color: violet;
 }
 
 .startbuttonarea{
   text-align: right;
   margin:auto;
-  width: 60%;
-  min-width: 400px;
+  width: 70%;
+  min-width: 600px;
   margin-bottom: 10px;
 }
 
@@ -125,6 +161,10 @@ body {
 }
 
 .result{
+  text-align: center;
+}
+
+.callresult{
   text-align: center;
 }
 

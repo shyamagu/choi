@@ -11,13 +11,13 @@
 <body>
   <div class="head">
     <h1>choi</h1>
-    <p>Emulate relay a http request to evaluate infrastracture</p>
+    <p>Emulate your App to relay a http(s) request to evaluate infrastracture</p>
   </div>
   <!-- Vue html -->
   <div class= "main" id="app">
     <!-- Send Request button and params -->
     <div class="startbuttonarea">
-      <span>{{statusMessage}}</span>
+      <span v-if="totalTime" class="resultcolor">{{totalTime}}</span><span>{{statusMessage}}</span>
       <button v-if="processing" class="startbutton"><div class="loader"></div></button>
       <button v-if="!processing" class="startbutton" v-on:click="startChoi">Send Request</button>
       <div class="paramtitle">number of times <input class="paramfield" type="number" v-model="param.num" placeholder="the number of times"/></div>
@@ -32,13 +32,40 @@
           <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
         </div>
         <table class="relaysetting">
-          <tr><td class="urltitle">uri</td><td><input class="urlinput" v-model="relay.url" placeholder="http://host:port/path"/></td></td></tr>
-          <tr v-if="!relay.timeout"><td>delay</td><td><input v-model="relay.delay" placeholder="delay time ex) 3000"/>(ms)</td></td></tr>
-          <tr v-if="!relay.timeout"><td>error</td><td><input name="error" type="checkbox" v-model="relay.error"/></td></td></tr>
-          <tr v-if="relay.error"><td>&nbsp;</td><td>code <input name="errorcode" type="number" v-model="relay.code"/></td></td></tr>
-          <tr v-if="!relay.error"><td>timeout</td><td><input name="timeout" type="checkbox" v-model="relay.timeout"/></td></td></tr>
+          <tr><td class="urltitle">uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/></td></td></tr>
+          <tr>
+            <td>options</td>
+            <td><button class="addcallbutton" v-on:click="addGETfiled(relay.id)">+ call GET</button>,</td> 
+            <td v-if="!relay.timeout">delay:<input class="numberinput" v-model="relay.delay" placeholder="ex) 200"/>(ms),</td>
+            <td v-if="!relay.timeout">error:<input name="error" type="checkbox" v-model="relay.error"/><span v-if="!relay.error">,</span></td>
+            <td v-if="relay.error">code:<input class="numberinput" name="errorcode" type="number" v-model="relay.code"/></td>
+            <td v-if="!relay.error">timeout:<input name="timeout" type="checkbox" v-model="relay.timeout"/></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td colspan="4">
+              <table class="callgetborder" v-for="i of relay.getcalls" :key="i">
+                <tr>
+                  <td>GET url</td><td colspan=3><input class="urlinput" v-model="relay.getcallurls[i-1]" placeholder="ex) http://169.254.169.254/metadata/instance?api-version=2021-01-01"/></td>
+                </tr>
+                <tr>
+                  <td>headers</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.getcallheaders[i-1]" placeholder="ex) {Metadata:True}"></textarea></td>
+                </tr>
+                <tr>
+                  <td class="callresult" v-if="!relay.getcallresults[i-1]" colspan=5>-----</td>
+                  <td calss="callresult" v-if="relay.getcallresults[i-1]" colspan=5>
+                    <details class="callresultarea">
+                      <summary class="resultcolor">call result</summary>
+                      <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(relay.getcallresults[i-1],null,"\t")}}</pre></div>
+                    </details>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
         </table>
-        <div v-bind:id="relay.id" class="result">{{relay.result}}</div>
+        <div v-if="!relay.result" class="result">-----</div>
+        <div v-if="relay.result" class="result resultcolor">{{relay.result}}</div>
       </div>
       <div class="arrow"></div>
     </div>
@@ -53,10 +80,11 @@
     data: {
       id: 3, //initial settings use 1,2
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, result:"-----"},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, result:"-----"},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, result:"", getcalls:0, getcallurls:[], getcallheaders:[], getcallresults:[]},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, result:"", getcalls:0, getcallurls:[], getcallheaders:[], getcallresults:[]},
       ],
       param:{num:1,interval:1000},
+      totalTime:"",
       statusMessage:"",
       errorMessage:"",
       processing:false, // to show loading
@@ -64,7 +92,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, result:"-----"})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, result:"", getcalls:0, getcallurls:[], getcallresults:[]})
         this.id++;
       },
       // Send request
@@ -79,12 +107,20 @@
 
         this.processing=true;
         let count=0;
+        this.totalTime = "";
         this.statusMessage = "";
         this.errorMessage = "";
+        const startTime=0;
 
         //post request with interval
         const intervalId = setInterval(function(){
+          this.relays.filter((relay)=>{
+            relay.result = "";
+            relay.getcallresults = [];
+          })
+          this.startTime = Date.now()
           let first = this.relays[0]
+
           fetch(first.url,{
             method:'POST',
             headers:{
@@ -94,6 +130,7 @@
           })
           .then(response => response.json())
           .then(data=>{
+            this.totalTime = "Totaltime " + (Date.now()-this.startTime) +"(ms), "
             this.statusMessage = "Succuess "+count+"/"+this.param.num
             // Show the result for each setting
             for(i in data){
@@ -101,13 +138,10 @@
               for(j in this.relays){
                 if(result.id === this.relays[j].id){
                   this.relays[j].result = "return:"+result.code+", elapsed time:"+result.elapsed+"(ms)"
+                  this.relays[j].getcallresults = result.callresults
                   if(result.error){
                     this.errorMessage = result.error
                   }
-                  document.getElementById(result.id).style.background = "#EE82EE";
-                  setTimeout(()=>{
-                    document.getElementById(result.id).style.background = "#FFF"
-                  },300);
                 }
               }
             }
@@ -127,6 +161,14 @@
       // Delete a relay setting
       deleteRelay: function(deleteid){
         this.relays = this.relays.filter(relay=> relay.id != deleteid)
+      },
+      addGETfiled:function(parentId){
+        for(let i in this.relays){
+          if(parentId===this.relays[i].id){
+            this.relays[i].getcalls += 1;
+            break;
+          }
+        }
       }
     }
   });

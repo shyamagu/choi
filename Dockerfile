@@ -11,4 +11,4 @@ RUN yarn install
 
 EXPOSE 3000
 
-CMD ["/choi/dumb-init", "yarn","start"]
+CMD ["./dumb-init", "yarn","start"]
