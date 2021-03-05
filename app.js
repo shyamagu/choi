@@ -30,10 +30,15 @@ app.use('/',async function (req,res,next){
         for (let i=0;i<thisrequest.getcalls;i++){
             let callstatus = ""
             let callresult = ""
+            let headersjson = "";
+            if(thisrequest.getcallheaders[i]){
+                headersjson = JSON.parse(thisrequest.getcallheaders[i])
+            }
+
             try{
                 const response = await fetch(thisrequest.getcallurls[i],{
                     method:'GET',
-                    headers:JSON.parse(thisrequest.getcallheaders[i]),
+                    headers:headersjson,
                 })
                 callstatus = response.status
                 callresult = await response.json()
