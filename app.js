@@ -33,7 +33,7 @@ app.use('/',async function (req,res,next){
             try{
                 const response = await fetch(thisrequest.getcallurls[i],{
                     method:'GET',
-                    headers:thisrequest.getcallheaders[i]
+                    headers:JSON.parse(thisrequest.getcallheaders[i]),
                 })
                 callstatus = response.status
                 callresult = await response.json()

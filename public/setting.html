@@ -49,7 +49,7 @@
                   <td>GET url</td><td colspan=3><input class="urlinput" v-model="relay.getcallurls[i-1]" placeholder="ex) http://169.254.169.254/metadata/instance?api-version=2021-01-01"/></td>
                 </tr>
                 <tr>
-                  <td>headers</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.getcallheaders[i-1]" placeholder="ex) {Metadata:True}"></textarea></td>
+                  <td>headers<br>(JSON)</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.getcallheaders[i-1]" placeholder='ex) {"Metadata":"True"} *use double-quotation'></textarea></td>
                 </tr>
                 <tr>
                   <td class="callresult" v-if="!relay.getcallresults[i-1]" colspan=5>-----</td>
