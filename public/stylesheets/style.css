@@ -5,15 +5,25 @@ body {
 }
 
 .head {
-  padding: 0.1em 0em 0.1em 0em;
   width :100%;
   text-align: center;
   background-color: blueviolet;
   color: #FFF;
+  padding:5px 0px 5px 0px;
 }
 
+.title{
+  font-size: 28px;
+  font-weight: bold;
+  margin: 15px 0px 10px 0px;
+}
+
+.description{
+  font-size: 16px;
+  margin: 0px 0px 10px 0px;
+}
 .main {
-  padding: 15px 0px 10px 0px;
+  padding: 0px 0px 10px 0px;
   width :70%;
   min-width: 600px;
   margin:auto;
@@ -126,6 +136,21 @@ body {
 }
 
 .startbutton:active{
+  background-color: violet;
+}
+
+.exportimportbutton{
+  color:#FFF;
+  background-color:blueviolet;
+  border: none;  /* 枠線を消す */
+  font-size: 16px;
+  width:80px;
+  margin-left:5px;
+  margin-bottom: 5px;
+  border-radius:0px;
+}
+
+.exportimportbutton:active{
   background-color: violet;
 }
 

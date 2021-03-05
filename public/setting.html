@@ -10,11 +10,17 @@
 
 <body>
   <div class="head">
-    <h1>choi</h1>
-    <p>Emulate your App to relay a http(s) request to evaluate infrastracture</p>
+    <div class="title">choi</div>
+    <div class="description">Emulate your App to relay a http(s) request to evaluate your infrastracture</div>
   </div>
   <!-- Vue html -->
   <div class= "main" id="app">
+    <!-- Export Import button-->
+    <div class="startbuttonarea">
+      <input type="file" ref="file" style="display:none" accept="json" v-on:change="importSetting()"/>
+      <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button></div>
+    </div>
+
     <!-- Send Request button and params -->
     <div class="startbuttonarea">
       <span v-if="totalTime" class="resultcolor">{{totalTime}}</span><span>{{statusMessage}}</span>
@@ -120,10 +126,15 @@
 
         this.processing=true;
         let count=0;
+        let loadedCount=0;
         this.totalTime = "";
         this.statusMessage = "";
         this.errorMessage = "";
         const startTime=0;
+        let interval = this.param.interval
+        if(this.param.num === 1){
+          interval = 0
+        }
 
         //post request with interval
         const intervalId = setInterval(function(){
@@ -147,7 +158,7 @@
           .then(response => response.json())
           .then(data=>{
             this.totalTime = "Totaltime " + (Date.now()-this.startTime) +"(ms), "
-            this.statusMessage = "Succuess "+count+"/"+this.param.num
+            this.statusMessage = "Succuess "+count+"/"+ this.param.num
             // Show the result for each setting
             for(i in data){
               let result = data[i]
@@ -167,7 +178,11 @@
                 }
               }
             }
-            this.processing=false;
+            loadedCount++;
+            console.log(loadedCount,this.param.num)
+            if(loadedCount === Number(this.param.num)){
+              this.processing = false;
+            }
           })
           .catch((error)=>{
             this.errorMessage = error
@@ -178,7 +193,7 @@
           if(count >= this.param.num){
             clearInterval(intervalId)
           }
-        }.bind(this),this.param.interval)
+        }.bind(this),interval)
       },
       // Delete a relay setting
       deleteRelay: function(deleteid){
@@ -191,6 +206,27 @@
             this.relays[i].apicallmethod.push("GET")
             break;
           }
+        }
+      },
+      exportSetting:function(){
+        let blob = new Blob([JSON.stringify(this.relays)],{type:'application/json'})
+        let link = document.createElement('a')
+        link.href = window.URL.createObjectURL(blob)
+        link.download = 'test.json'
+        link.click()
+      },
+      importSetting:function(){
+        const file = this.$refs.file.files[0]
+        if(file){
+          const reader = new FileReader();
+          reader.onload = e =>{
+            this.relays = JSON.parse(e.target.result)
+            this.id = this.relays.length + 1
+            this.totalTime = ""
+            this.statusMessage = "Setting imported"
+            this.errorMessage = ""
+          }
+          reader.readAsText(file)
         }
       }
     }

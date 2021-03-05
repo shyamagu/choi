@@ -12,10 +12,10 @@ choi (check our infrastracture) is a super simple web-application using vuejs an
 for each machine/vm/container
 1. install nodejs on your machine/vm/container
 2. clone this repository
-3. yarn install
-4. yarn start
+3. npm install
+4. npm start
 
-then you can access a choi page at this server (default: http://localhost:3000) , any path available /*
+then you can access a choi setting page at this server (http://<yourserver>:3000) , any path available /*
 
 if you want to change PORT, please note your PORT in .env file
 ````
@@ -24,7 +24,7 @@ PORT=3001
 
 if you want to use HTTPS, please add HTTPS configuration(PORT,cert file...) in .env file like below.
 
-*Not recommend, but if you want to use self signed certification, please use NODE_TLS_REJECT_UNAUTHORIZED=0 in this file.
+*Not recommended, but if you want to use a self signed certification, use NODE_TLS_REJECT_UNAUTHORIZED=0 in this file.
 ````
 ...
 HTTPS_PORT=5000
