@@ -32,10 +32,10 @@
           <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
         </div>
         <table class="relaysetting">
-          <tr><td class="urltitle">uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/></td></td></tr>
+          <tr><td class="urltitle">choi uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/></td></td></tr>
           <tr>
             <td>options</td>
-            <td><button class="addcallbutton" v-on:click="addGETfiled(relay.id)">+ call GET</button>,</td> 
+            <td><button class="addcallbutton" v-on:click="addCallfiled(relay.id)">+ call API</button>,</td> 
             <td v-if="!relay.timeout">delay:<input class="numberinput" v-model="relay.delay" placeholder="ex) 200"/>(ms),</td>
             <td v-if="!relay.timeout">error:<input name="error" type="checkbox" v-model="relay.error"/><span v-if="!relay.error">,</span></td>
             <td v-if="relay.error">code:<input class="numberinput" name="errorcode" type="number" v-model="relay.code"/></td>
@@ -44,19 +44,31 @@
           <tr>
             <td>&nbsp;</td>
             <td colspan="4">
-              <table class="callgetborder" v-for="i of relay.getcalls" :key="i">
+              <table class="callapiborder" v-for="i of relay.apicalls" :key="i">
                 <tr>
-                  <td>GET url</td><td colspan=3><input class="urlinput" v-model="relay.getcallurls[i-1]" placeholder="ex) http://169.254.169.254/metadata/instance?api-version=2021-01-01"/></td>
+                  <td>Method</td><td colspan=3>
+                    <select v-model="relay.apicallmethod[i-1]">
+                      <option v-for="option in options" v-bind:value="option.value">
+                        {{ option.text }}
+                      </option>
+                    </select>
+                  </td>
                 </tr>
                 <tr>
-                  <td>headers<br>(JSON)</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.getcallheaders[i-1]" placeholder='ex) {"Metadata":"True"} *use double-quotation'></textarea></td>
+                  <td>API url</td><td colspan=3><input class="urlinput" v-model="relay.apicallurls[i-1]" placeholder="ex) http://169.254.169.254/metadata/instance?api-version=2021-01-01"/></td>
                 </tr>
                 <tr>
-                  <td class="callresult" v-if="!relay.getcallresults[i-1]" colspan=5>-----</td>
-                  <td calss="callresult" v-if="relay.getcallresults[i-1]" colspan=5>
+                  <td>headers<br>(JSON)</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.apicallheaders[i-1]" placeholder='ex) {"Metadata":"True"} *use double-quotation'></textarea></td>
+                </tr>
+                <tr v-if="relay.apicallmethod[i-1] === 'POST'">
+                  <td>body<br>(Text)</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.apicallbody[i-1]" placeholder='ex) key=value'></textarea></td>
+                </tr>
+                <tr>
+                  <td class="callresult" v-if="!relay.apicallresults[i-1]" colspan=5>-----</td>
+                  <td calss="callresult" v-if="relay.apicallresults[i-1]" colspan=5>
                     <details class="callresultarea">
-                      <summary class="resultcolor">call result</summary>
-                      <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(relay.getcallresults[i-1],null,"\t")}}</pre></div>
+                      <summary class="resultcolor">code:{{relay.apicallstatuses[i-1]}}, elapsed time:{{relay.apicalltimes[i-1]}}(ms)</summary>
+                      <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(relay.apicallresults[i-1],null,"\t")}}</pre></div>
                     </details>
                   </td>
                 </tr>
@@ -64,8 +76,8 @@
             </td>
           </tr>
         </table>
-        <div v-if="!relay.result" class="result">-----</div>
-        <div v-if="relay.result" class="result resultcolor">{{relay.result}}</div>
+        <div v-if="!relay.resultcode" class="result">-----</div>
+        <div v-if="relay.resultcode" class="result resultcolor">code:{{relay.resultcode}}, elapesd time:{{relay.resulttime}}(ms)</div>
       </div>
       <div class="arrow"></div>
     </div>
@@ -79,9 +91,10 @@
     el: '#app',
     data: {
       id: 3, //initial settings use 1,2
+      options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, result:"", getcalls:0, getcallurls:[], getcallheaders:[], getcallresults:[]},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, result:"", getcalls:0, getcallurls:[], getcallheaders:[], getcallresults:[]},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[]},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[]},
       ],
       param:{num:1,interval:1000},
       totalTime:"",
@@ -92,7 +105,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, result:"", getcalls:0, getcallurls:[], getcallresults:[]})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[]})
         this.id++;
       },
       // Send request
@@ -115,8 +128,11 @@
         //post request with interval
         const intervalId = setInterval(function(){
           this.relays.filter((relay)=>{
-            relay.result = "";
-            relay.getcallresults = [];
+            relay.resultcode = "";
+            relay.resulttime = "";
+            relay.apicallresults = [];
+            relay.apicallstatuses= [];
+            relay.apicalltimes= [];
           })
           this.startTime = Date.now()
           let first = this.relays[0]
@@ -137,10 +153,15 @@
               let result = data[i]
               for(j in this.relays){
                 if(result.id === this.relays[j].id){
-                  this.relays[j].result = "return:"+result.code+", elapsed time:"+result.elapsed+"(ms)"
-                  this.relays[j].getcallresults = result.callresults
+                  this.relays[j].resultcode = result.code
+                  this.relays[j].resulttime = result.elapsed
+                  this.relays[j].apicallresults = result.callresults
+                  this.relays[j].apicallstatuses= result.callstatuses
+                  this.relays[j].apicalltimes= result.calltimes
                   if(result.error){
-                    this.errorMessage = result.error
+                    var next = Number(j)+1;
+                    this.relays[next].result = result.error
+                    this.errorMessage = "STEP ERROR"
                   }
                 }
               }
@@ -162,10 +183,11 @@
       deleteRelay: function(deleteid){
         this.relays = this.relays.filter(relay=> relay.id != deleteid)
       },
-      addGETfiled:function(parentId){
+      addCallfiled:function(parentId){
         for(let i in this.relays){
           if(parentId===this.relays[i].id){
-            this.relays[i].getcalls += 1;
+            this.relays[i].apicalls += 1;
+            this.relays[i].apicallmethod.push("GET")
             break;
           }
         }

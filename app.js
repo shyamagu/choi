@@ -26,26 +26,44 @@ app.use('/',async function (req,res,next){
         var thisrequest = relays.shift() //remove this request from this relay
 
         //call GET
+        let callstatuses= []
         let callresults = []
-        for (let i=0;i<thisrequest.getcalls;i++){
+        let calltimes = []
+        for (let i=0;i<thisrequest.apicalls;i++){
             let callstatus = ""
             let callresult = ""
-            let headersjson = "";
-            if(thisrequest.getcallheaders[i]){
-                headersjson = JSON.parse(thisrequest.getcallheaders[i])
+            let headersjson = ""
+            let callmethod = thisrequest.apicallmethod[i]
+            let calltime = Date.now()
+
+            if(thisrequest.apicallheaders[i]){
+                headersjson = JSON.parse(thisrequest.apicallheaders[i])
             }
 
-            try{
-                const response = await fetch(thisrequest.getcallurls[i],{
-                    method:'GET',
-                    headers:headersjson,
-                })
-                callstatus = response.status
-                callresult = await response.json()
-            }catch(err){
-                callresult = {error:err.message}
+            if(thisrequest.apicallurls[i]){
+                try{
+                    let response;
+                    if(callmethod === "GET"){
+                        response = await fetch(thisrequest.apicallurls[i],{
+                            method:'GET',
+                            headers:headersjson,
+                        })
+                    }else{
+                        response = await fetch(thisrequest.apicallurls[i],{
+                            method:'POST',
+                            headers:headersjson,
+                            body:thisrequest.apicallbody[i]
+                        })
+                    }
+                    callstatus = response.status
+                    callresult = await response.json()
+                }catch(err){
+                    callresult = {error:err.message}
+                }
             }
+            callstatuses.push(callstatus)
             callresults.push(callresult)
+            calltimes.push(Date.now()-calltime)
         }
 
         //sleep
@@ -88,7 +106,7 @@ app.use('/',async function (req,res,next){
             }
 
             let returnMessages = data ? data: []
-            returnMessages.unshift({id:thisrequest.id,url:thisrequest.url,code:code,elapsed:Date.now()-startTime,error:error.message,callresults:callresults})
+            returnMessages.unshift({id:thisrequest.id,url:thisrequest.url,code:code,elapsed:Date.now()-startTime,error:error.message,callstatuses:callstatuses,callresults:callresults,calltimes:calltimes})
             res.json(returnMessages)
         }
     }
