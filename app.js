@@ -2,12 +2,16 @@ require('dotenv').config();
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var logger = require('morgan');
 var cors = require('cors')
-
+var log4js = require('log4js')
+//var logger = require('morgan');
+log4js.configure('log4js.config.json')
+var logger = log4js.getLogger('choi')
 var app = express();
 
-app.use(logger('dev'));
+//app.use(logger('dev'));
+app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -27,6 +31,32 @@ app.use('/',async function (req,res,next){
 
         var relays = req.body
         var thisrequest = relays.shift() //remove this request from this relay
+
+        //log
+        for (let i=0;i<thisrequest.lognums;i++){
+            switch (thisrequest.loglevels[i]) {
+                case "FATAL":
+                    logger.fatal(thisrequest.logdetails[i])
+                    break;
+                case "ERROR":
+                    logger.error(thisrequest.logdetails[i])
+                    break;
+                case "WARN":
+                    logger.warn(thisrequest.logdetails[i])
+                    break;
+                case "INFO":
+                    logger.info(thisrequest.logdetails[i])
+                    break;
+                case "DEBUG":
+                    logger.debug(thisrequest.logdetails[i])
+                    break;
+                case "TRACE":
+                    logger.trace(thisrequest.logdetails[i])
+                    break;
+                default:
+                    break;
+            }
+        }
 
         //call GET
         let callstatuses= []

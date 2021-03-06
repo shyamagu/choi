@@ -48,6 +48,12 @@ body {
   background-color: #fff462;
 }
 
+.logborder{
+  border-style: solid;
+  border-width: 2px;
+  border-color: #CCC;
+}
+
 .callapiborder{
   width:450px;
   border-style: solid;
@@ -91,7 +97,7 @@ body {
 }
 .relaysetting{
   text-align: left;
-  margin:0px 0px 0px 30px;
+  margin:0px auto 0px auto;
 }
 
 .urltitle{
@@ -114,6 +120,17 @@ body {
 }
 
 .addcallbutton:active{
+  background-color: violet;
+}
+
+.addlogbutton{
+  color:#FFF;
+  background-color:#000;
+  border: none;  /* 枠線を消す */
+  font-size: 16px;
+}
+
+.addlogbutton:active{
   background-color: violet;
 }
 

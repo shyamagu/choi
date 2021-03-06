@@ -1,0 +1,33 @@
+{
+    "appenders": {
+        "choi": {
+            "type": "file",
+            "filename": "log/choi.log",
+            "maxLogSize":10000000,
+            "backups":5
+        },
+        "access":{
+            "type": "dateFile",
+            "filename": "log/access.log",
+            "pattern": ".yyyy-MM-dd",
+            "category": "http"
+        },
+        "console":{
+            "type": "console"
+        }
+    },
+    "categories": {
+        "default": {
+            "appenders": [
+                "choi","console"
+            ],
+            "level": "DEBUG"
+        },
+        "http":{
+            "appenders": [
+                "access","console"
+            ],
+            "level": "DEBUG"
+        }
+    }
+}

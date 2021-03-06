@@ -41,15 +41,32 @@
           <tr><td class="urltitle">choi uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/></td></td></tr>
           <tr>
             <td>options</td>
-            <td><button class="addcallbutton" v-on:click="addCallfiled(relay.id)">+ call API</button>,</td> 
             <td v-if="!relay.timeout">delay:<input class="numberinput" v-model="relay.delay" placeholder="ex) 200"/>(ms),</td>
             <td v-if="!relay.timeout">error:<input name="error" type="checkbox" v-model="relay.error"/><span v-if="!relay.error">,</span></td>
             <td v-if="relay.error">code:<input class="numberinput" name="errorcode" type="number" v-model="relay.code"/></td>
             <td v-if="!relay.error">timeout:<input name="timeout" type="checkbox" v-model="relay.timeout"/></td>
+            <td><button class="addlogbutton"  v-on:click="addLogfield(relay.id)">+ Log</button></td>
+          </tr>
+          <tr v-for="i of relay.lognums" :key="i">
+            <td>&nbsp;</td>
+            <td colspan="5" class="logborder">
+              <select v-model="relay.loglevels[i-1]">
+                <option v-for="level in loglevels" v-bind:value="level.value">
+                  {{ level.text }}
+                </option>
+              </select>
+              <input class="urlinput" v-model="relay.logdetails[i-1]" placeholder="something to log"/>
+            </td>
           </tr>
           <tr>
-            <td>&nbsp;</td>
-            <td colspan="4">
+            <td>
+              <div><button class="addcallbutton" v-on:click="addCallfield(relay.id)">+ call API</button></div> 
+            </td>
+          </tr>
+        </table>
+        <table class="relaysetting">
+          <tr>
+            <td>
               <table class="callapiborder" v-for="i of relay.apicalls" :key="i">
                 <tr>
                   <td>Method</td><td colspan=3>
@@ -98,9 +115,10 @@
     data: {
       id: 3, //initial settings use 1,2
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
+      loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[]},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[]},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[]},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[]},
       ],
       param:{num:1,interval:1000},
       totalTime:"",
@@ -111,7 +129,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[]})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[]})
         this.id++;
       },
       // Send request
@@ -199,11 +217,20 @@
       deleteRelay: function(deleteid){
         this.relays = this.relays.filter(relay=> relay.id != deleteid)
       },
-      addCallfiled:function(parentId){
+      addCallfield:function(parentId){
         for(let i in this.relays){
           if(parentId===this.relays[i].id){
             this.relays[i].apicalls += 1;
             this.relays[i].apicallmethod.push("GET")
+            break;
+          }
+        }
+      },
+      addLogfield:function(parentId){
+        for(let i in this.relays){
+          if(parentId===this.relays[i].id){
+            this.relays[i].lognums += 1;
+            this.relays[i].loglevels.push("INFO")
             break;
           }
         }
