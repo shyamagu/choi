@@ -81,7 +81,7 @@ you can export and import setting to use "export" button and "import" button at 
 
 output json file includes all settings and all result.
 
-## Evaluate your infrastracture
+# Evaluate your infrastracture
 
 Using choi, you can evaluate your monitoring tool, network, infrastracture to emulate application which has not yet been developed.
 
