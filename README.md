@@ -4,7 +4,7 @@ The purpose of this application is that to evaluate your infrastracture such lik
 It's easy to create cloud infrastraucre but it's still necesarry to prepare application/middleware to check operations, network, monitoring tools on the infrastracture from the view of application layer.
 
 "choi" (check of infrastracture) is a super simple web-application using vuejs and node-express and this app can easily relay http(s) request, call external apis and ouput custom log like below.
-In short, "choi" can emulates a real application system which you or your team will developed.
+In short, "choi" can emulates a real application which you or your team will developed, so you can focus on your infrastracture/network/monitoring and the operation verification.
 
 
 ![choi overview](./choi_overview.png)
@@ -63,6 +63,11 @@ EXPOSE 3000
 
 CMD ["./dumb-init","yarn","start"]
 ````
+
+## DockerHub image for quick start
+
+[shyamagu/choi:http](https://hub.docker.com/r/shyamagu/choi) can be used for your quick test.
+This image's setting is only HTTP and opend port is 3000.
 
 ## Setup tips for Windows user
 
