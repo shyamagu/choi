@@ -1,9 +1,11 @@
 # choi
 
 The purpose of this application is that to evaluate your infrastracture such like cloud-VMs, containers and k8s.
-It's easy to create cloud infrastraucre but it's still necesarry to prepare application or middleware to check operations, network, monitoring on the infrastracture from the view of application layer.
+It's easy to create cloud infrastraucre but it's still necesarry to prepare application/middleware to check operations, network, monitoring tools on the infrastracture from the view of application layer.
 
-choi (check of infrastracture) is a super simple web-application using vuejs and node-express and this app can easily relay http(s) request, call external apis and ouput log like below.
+"choi" (check of infrastracture) is a super simple web-application using vuejs and node-express and this app can easily relay http(s) request, call external apis and ouput custom log like below.
+In short, "choi" can emulates a real application system which you or your team will developed.
+
 
 ![choi overview](./choi_overview.png)
 
@@ -16,32 +18,32 @@ For each machine/vm/container
 4. npm install
 5. npm start
 
-then you can access a choi's setting page at this server (http://YOUR_SERVER_URL:3000) , any path available /*
+Then you can access a choi's setting page at this choi server (http://YOUR_SERVER_URL:3000) , any url path available /*
 
 ## Custom PORT
 
-if you want to change PORT, please note your PORT in a "/.env" file
+If you want to change PORT, please note your PORT in a "/.env" file
 ````
 PORT=3001
 ````
 
 ## HTTPS server
 
-if you want to use HTTPS, please add HTTPS configuration(PORT,pem file path, crt file path) in a "/.env" file like below.
+If you want to use HTTPS, please add HTTPS configuration(PORT,pem file path, crt file path) in a "/.env" file like below.
 
 *Not recommended, but if you want to use a self signed certification, use NODE_TLS_REJECT_UNAUTHORIZED=0 in this file.
 ````
 ...
 HTTPS_PORT=5000
-HTTPS_PEM=./key/private_key.pem
-HTTPS_CRT=./key/server.crt
+HTTPS_PEM=./key/your_private_key.pem
+HTTPS_CRT=./key/your_server.crt
 NODE_TLS_REJECT_UNAUTHORIZED=0
 ````
 
 ## Custom log
 
-choi can output custom log.
-if you want to customize log format, rollup setting and so on, please customize "log4js.config.json" file in the root folder.
+choi can output custom log, using log4js-node.
+If you want to customize log format, rollup setting and so on, please customize "log4js.config.json" file in the root folder.
 
 ## Dockerfile sample
 ````
@@ -68,24 +70,24 @@ CMD ["./dumb-init","yarn","start"]
 
 # How to use
 
-"choi" is a no-code app application. you can configure server url, application emulation, and call external apis and custom log settings.
+"choi" is like a no-code app application. you can configure server urls, application behaviors, and call external apis and output custom log.
 
-Below picture shows the sample setting and show how to work.
+Below picture shows a sample setting and how to work.
 Push "Send Request" button to start the process and you can see all results of calling apis and each network latency.
 
 ![choi sample setting](./choi_setting_sample.png)
 
 ## Export and import setting
 
-you can export and import setting to use "export" button and "import" button at the top of choi page.
+you can export and import setting to use "export" button and "import" button at the top of choi setting page.
 
-output json file includes all settings and all result.
+An output json file includes all settings and all result.
 
 # Evaluate your infrastracture
 
-Using choi, you can evaluate your monitoring tool, network, infrastracture to emulate application which has not yet been developed.
+Using choi, you can evaluate your monitoring tool, network　communication path and the infrastracture to emulate application which has not yet been developed.
 
 ## Tips for Azure User
 
-- try to call an Azure Instance Metadata Service([Windows](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service?tabs=linux),[Linux](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/instance-metadata-service?tabs=linux)) in choi to get metadata of your infrastracure.
+- try to call "http://169.254.169.254" which is an Azure Instance Metadata Service([Windows](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service?tabs=linux),[Linux](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/instance-metadata-service?tabs=linux)) in choi to get metadata of your infrastracure.
 
