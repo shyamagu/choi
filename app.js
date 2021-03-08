@@ -89,8 +89,15 @@ app.use('/',async function (req,res,next){
                         })
                     }
                     callstatus = response.status
-                    callresult = await response.json()
+                    var responseForText = response.clone()
+                    
+                    try{
+                        callresult = await response.json()
+                    }catch(jsonerr){
+                        callresult = await responseForText.text()
+                    }
                 }catch(err){
+                    logger.error(err)
                     callresult = {error:err.message}
                 }
             }
@@ -129,6 +136,7 @@ app.use('/',async function (req,res,next){
                     const status = response.status
                     data = await response.json()
                 }catch(err){
+                    logger.error(err)
                     error = err
                 }
             }

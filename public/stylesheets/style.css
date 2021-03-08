@@ -70,6 +70,9 @@ body {
 
 .prefield{
   width:450px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .relaytitle{
