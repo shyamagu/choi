@@ -1,9 +1,9 @@
 # choi
 
-The purpose of this application is that to evaluate your infrastracture such like cloud-VMs, containers and k8s.
+The purpose of this application is that to test/verificate/evaluate your infrastracture such like cloud-VMs, containers and k8s.
 It's easy to create cloud infrastraucre but it's still necesarry to prepare application/middleware to check operations, network, monitoring tools on the infrastracture from the view of application layer.
 
-"choi" (check of infrastracture) is a super simple web-application using vuejs and node-express and this app can easily relay http(s) request, call external apis and ouput custom log like below.
+"choi" (check of infrastracture) is a super simple web-application using vuejs and node-express and this app can easily relay http(s) request, call external apis and output custom log like below.
 In short, "choi" can emulates a real application which you or your team will developed, so you can focus on your infrastracture/network/monitoring and the operation verification.
 
 
