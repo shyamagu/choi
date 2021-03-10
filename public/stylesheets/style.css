@@ -68,6 +68,15 @@ body {
   width:450px;
 }
 
+.processenvarea{
+  border-style: solid;
+  border-width: 2px;
+  border-color: #CCCCCC;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  width:450px;
+}
+
 .prefield{
   width:450px;
   overflow: auto;
@@ -211,8 +220,12 @@ body {
 
 .callresult{
   text-align: center;
+  margin-bottom:2px;
 }
 
+.callresultarea{
+  text-align:left;
+}
 .error{
   color:#F00;
 }

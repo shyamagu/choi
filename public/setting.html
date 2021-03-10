@@ -20,7 +20,6 @@
       <input type="file" ref="file" style="display:none" accept="json" v-on:change="importSetting()"/>
       <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button></div>
     </div>
-
     <!-- Send Request button and params -->
     <div class="startbuttonarea">
       <span v-if="totalTime" class="resultcolor">{{totalTime}}</span><span>{{statusMessage}}</span>
@@ -99,6 +98,18 @@
             </td>
           </tr>
         </table>
+        <table class="relaysetting">
+          <tr>
+            <td>
+              <div v-if="relay.processenv" class="processenvarea">
+                <details class="callresultarea">
+                  <summary class="resultcolor">process.env of this server</summary>
+                  <div class="callresultdetail"><pre class="prefield">{{relay.processenv}}</pre></div>
+                </details>
+              </div>
+            </td>
+          </tr>
+        </table>
         <div v-if="!relay.resultcode" class="result">-----</div>
         <div v-if="relay.resultcode" class="result resultcolor">code:{{relay.resultcode}}, elapesd time:{{relay.resulttime}}(ms)</div>
       </div>
@@ -117,8 +128,8 @@
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[]},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[]},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:""},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:""},
       ],
       param:{num:1,interval:1000},
       totalTime:"",
@@ -129,7 +140,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[]})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:""})
         this.id++;
       },
       // Send request
@@ -162,6 +173,7 @@
             relay.apicallresults = [];
             relay.apicallstatuses= [];
             relay.apicalltimes= [];
+            relay.processenv = "";
           })
           this.startTime = Date.now()
           let first = this.relays[0]
@@ -187,6 +199,7 @@
                   this.relays[j].apicallresults = result.callresults
                   this.relays[j].apicallstatuses= result.callstatuses
                   this.relays[j].apicalltimes= result.calltimes
+                  this.relays[j].processenv = result.processenv
                   if(result.error){
                     var next = Number(j)+1;
                     this.relays[next].result = result.error
@@ -197,7 +210,6 @@
               }
             }
             loadedCount++;
-            console.log(loadedCount,this.param.num)
             if(loadedCount === Number(this.param.num)){
               this.processing = false;
             }

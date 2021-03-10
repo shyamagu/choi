@@ -147,7 +147,7 @@ app.use('/',async function (req,res,next){
             }
 
             let returnMessages = data ? data: []
-            returnMessages.unshift({id:thisrequest.id,url:thisrequest.url,code:code,elapsed:Date.now()-startTime,error:error.message,callstatuses:callstatuses,callresults:callresults,calltimes:calltimes})
+            returnMessages.unshift({id:thisrequest.id,url:thisrequest.url,code:code,elapsed:Date.now()-startTime,error:error.message,callstatuses:callstatuses,callresults:callresults,calltimes:calltimes,processenv:process.env})
             res.json(returnMessages)
         }
     }
