@@ -77,6 +77,14 @@ body {
   width:450px;
 }
 
+.serchkeywordinputarea{
+  margin-top: 5px;
+  text-align: center;
+}
+.serchkeywordinput{
+  width:300px;
+}
+
 .prefield{
   width:450px;
   overflow: auto;

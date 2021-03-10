@@ -90,7 +90,8 @@
                   <td calss="callresult" v-if="relay.apicallresults[i-1]" colspan=5>
                     <details class="callresultarea">
                       <summary class="resultcolor">code:{{relay.apicallstatuses[i-1]}}, elapsed time:{{relay.apicalltimes[i-1]}}(ms)</summary>
-                      <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(relay.apicallresults[i-1],null,"\t")}}</pre></div>
+                      <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.apiserchkeywords[i-1]" placeholder="keyword"/></div>
+                      <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.apiserchkeywords[i-1],relay.apicallresults[i-1]),null,"\t")}}</pre></div>
                     </details>
                   </td>
                 </tr>
@@ -104,7 +105,8 @@
               <div v-if="relay.processenv" class="processenvarea">
                 <details class="callresultarea">
                   <summary class="resultcolor">process.env of this server</summary>
-                  <div class="callresultdetail"><pre class="prefield">{{relay.processenv}}</pre></div>
+                  <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.processsearchkeyword" placeholder="keyword"/></div>
+                  <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.processsearchkeyword,relay.processenv),null,"\t")}}</pre></div>
                 </details>
               </div>
             </td>
@@ -128,8 +130,8 @@
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:""},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:""},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
       ],
       param:{num:1,interval:1000},
       totalTime:"",
@@ -140,7 +142,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltime:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:""})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
         this.id++;
       },
       // Send request
@@ -210,6 +212,7 @@
               }
             }
             loadedCount++;
+
             if(loadedCount === Number(this.param.num)){
               this.processing = false;
             }
@@ -251,7 +254,7 @@
         let blob = new Blob([JSON.stringify(this.relays)],{type:'application/json'})
         let link = document.createElement('a')
         link.href = window.URL.createObjectURL(blob)
-        link.download = 'test.json'
+        link.download = 'choi.json'
         link.click()
       },
       importSetting:function(){
@@ -267,6 +270,29 @@
           }
           reader.readAsText(file)
         }
+      },
+      search:function(keyword, json){
+        if(!keyword) return json
+
+        returnJsonText = {}
+        const keyList = Object.keys(json)
+        const valueList = Object.values(json)
+
+        keyList.forEach((key,index)=>{
+          if(key.match(keyword)){
+            returnJsonText[key] = valueList[index]
+          }
+        })
+
+        //pending
+        //valueList.forEach((value,index)=>{
+        //  console.log(typeof value)
+        //  if(value.match(keyword)){
+        //    returnJsonText[keyList[index]] = value
+        //  }
+        //})
+
+        return returnJsonText
       }
     }
   });
