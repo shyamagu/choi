@@ -6,6 +6,8 @@
   <link rel="stylesheet" href="/stylesheets/style.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+  <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
 </head>
 
 <body>
@@ -22,11 +24,15 @@
     </div>
     <!-- Send Request button and params -->
     <div class="startbuttonarea">
-      <span v-if="totalTime" class="resultcolor">{{totalTime}}</span><span>{{statusMessage}}</span>
+      <span v-if="statusMessage" class="resultcolor">{{statusMessage}}</span>
       <button v-if="processing" class="startbutton"><div class="loader"></div></button>
       <button v-if="!processing" class="startbutton" v-on:click="startChoi">Send Request</button>
       <div class="paramtitle">number of times <input class="paramfield" type="number" v-model="param.num" placeholder="the number of times"/></div>
       <div class="paramtitle">interval (ms)   <input class="paramfield" type="number" v-model="param.interval" placeholder="ex) 100"/></div>
+      <div><button v-on:click="showLatency">{{showLatencyFlag? "▲ hide Perf. graph":"▼ show Perf. graph" }}</button></div>
+    </div>
+    <div v-if="showLatencyFlag">
+      <div class="chartarea"><line-chart :chart-data="datacollection" :options="chartOptions"/></div>
     </div>
     <div v-if="errorMessage" class="error">{{errorMessage}}</div>
     <!-- Http request relay settings -->
@@ -123,6 +129,14 @@
 </body>
 
 <script>
+  Vue.component('line-chart', {
+    extends: VueChartJs.Line,
+    mixins: [VueChartJs.mixins.reactiveProp],
+    props: ['options'],
+    mounted () {
+      this.renderChart(this.chartData, this.options)
+    }
+  })
   var app = new Vue({
     el: '#app',
     data: {
@@ -134,10 +148,42 @@
         {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
       ],
       param:{num:1,interval:1000},
-      totalTime:"",
       statusMessage:"",
       errorMessage:"",
       processing:false, // to show loading
+      allPerfData:[],
+      showLatencyFlag:false,
+      datacollection:null,
+      all_chart_data:[],
+      chartOptions:{
+        responsive: true,
+        maintainAspectRatio: false,
+        scales:{
+          yAxes:[{
+            ticks:{
+              min:0,
+              beginAtZero:true
+            }
+          }]
+        },
+        legend: {
+          labels: {
+            filter: (item, chart) => {
+              const label = item.text
+              if (!label) {
+                return false;
+              }
+              return true;
+            },
+          },
+        },
+      },
+      chartColorTotal:'#999999',
+      chartColorSteps:['#CC9999','#9999CC','#99CC99','#CCCC99','#99CCCC','#CC99CC','#FFCCCC','#CCCCFF','#CCFFCC','#FFFFCC'],
+      chartColorApis:['#CC9999','#9999CC','#99CC99','#CCCC99','#99CCCC','#CC99CC','#FFCCCC','#CCCCFF','#CCFFCC','#FFFFCC']
+    },
+    mounted () {
+      this.showChart()
     },
     methods:{
       // Add relay setting
@@ -155,17 +201,20 @@
           return
         }
 
+        //initialize
         this.processing=true;
         let count=0;
         let loadedCount=0;
-        this.totalTime = "";
         this.statusMessage = "";
         this.errorMessage = "";
-        const startTime=0;
         let interval = this.param.interval
         if(this.param.num === 1){
           interval = 0
         }
+        this.allPerfData = []
+        this.all_chart_data = []
+        //refresh chart
+        this.showChart()
 
         //post request with interval
         const intervalId = setInterval(function(){
@@ -177,8 +226,12 @@
             relay.apicalltimes= [];
             relay.processenv = "";
           })
-          this.startTime = Date.now()
+          let totalTime = 0
+          let startTime = Date.now()
           let first = this.relays[0]
+          //init one perf data
+          let oneResult = {}
+          
 
           fetch(first.url,{
             method:'POST',
@@ -189,12 +242,35 @@
           })
           .then(response => response.json())
           .then(data=>{
-            this.totalTime = "Totaltime " + (Date.now()-this.startTime) +"(ms), "
-            this.statusMessage = "Succuess "+count+"/"+ this.param.num
-            // Show the result for each setting
-            for(i in data){
+            totalTime = Date.now()-startTime
+            this.statusMessage = "Total time: "+totalTime+"(ms) Succuess "+count+"/"+ this.param.num
+
+            //set result to allPerfData
+            oneResult["totalTime"]= totalTime
+            let stepResults = []
+            
+            //init one_chart_data
+            let one_chart_data = {}
+            one_chart_data["total"] = totalTime
+            one_chart_data["steps_ids"] = []
+            one_chart_data["steps"] = {}
+            one_chart_data["steps_apis"] = {}
+
+            // Show the result for each STEP
+            for(let i in data){
               let result = data[i]
-              for(j in this.relays){
+
+              //set all perf data
+              let stepResult = {}
+              stepResult["stepUrl"]  = result.url
+              stepResult["stepTime"] = result.elapsed
+
+              //set chartdata
+              one_chart_data["steps_ids"].push(i)
+              one_chart_data["steps"][i] = result.elapsed
+              one_chart_data["steps_apis"][i] = {}
+
+              for(let j in this.relays){
                 if(result.id === this.relays[j].id){
                   this.relays[j].resultcode = result.code
                   this.relays[j].resulttime = result.elapsed
@@ -202,17 +278,33 @@
                   this.relays[j].apicallstatuses= result.callstatuses
                   this.relays[j].apicalltimes= result.calltimes
                   this.relays[j].processenv = result.processenv
+
+                  //set all perf data
+                  stepResult["apiCalls"] = result.calltimes
+                  stepResult["apiCallUrls"] = this.relays[j].apicallurls
+
+                  //set chartdata
+                  one_chart_data["steps_apis"][i] = result.calltimes
+
                   if(result.error){
                     var next = Number(j)+1;
                     this.relays[next].result = result.error
                     this.errorMessage = "STEP ERROR"
                     console.log(result.error)
                   }
+                  break
                 }
               }
-            }
-            loadedCount++;
 
+              stepResults.push(stepResult)
+            }
+            //show chart
+            this.all_chart_data.push(one_chart_data)
+            this.showChart()
+
+            loadedCount++;
+            oneResult["stepResults"]=stepResults
+            this.allPerfData.push(oneResult)
             if(loadedCount === Number(this.param.num)){
               this.processing = false;
             }
@@ -264,7 +356,6 @@
           reader.onload = e =>{
             this.relays = JSON.parse(e.target.result)
             this.id = this.relays.length + 1
-            this.totalTime = ""
             this.statusMessage = "Setting imported"
             this.errorMessage = ""
           }
@@ -293,7 +384,100 @@
         //})
 
         return returnJsonText
-      }
+      },
+      showLatency:function(){
+        this.showChart()
+        this.showLatencyFlag = !this.showLatencyFlag
+      },
+      showChart: function(){
+
+        let datasets = []
+
+        if(!this.all_chart_data || this.all_chart_data.length==0){
+          this.datacollection = {
+          labels: Array(Number(this.param.num)).fill(0).map((_, i) => i + 1),
+          datasets: datasets
+          }
+          return
+        }
+        
+        let one_chart_data = this.all_chart_data[0]
+        let totals = []
+        let steps = {}
+        let steps_api = {}
+        let laststepindex = ""
+        Object.keys(one_chart_data.steps).forEach(stepindex=>{
+          laststepindex = stepindex
+          steps[stepindex]=[]
+          steps_api[stepindex] = {}
+
+          one_chart_data.steps_apis[stepindex].forEach((call,apiindex)=>{
+            steps_api[stepindex][apiindex] = []
+          })
+        })
+
+        for(let time=0;time<this.all_chart_data.length;time++){
+          let one = this.all_chart_data[time]
+          totals.push(one.total)
+
+          Object.keys(one.steps).forEach(stepindex=>{
+            steps[stepindex].push(one.steps[stepindex])
+
+            let past = 0
+            if(stepindex!=laststepindex){
+              past = one.steps[Number(stepindex)+1]
+            }
+            one.steps_apis[stepindex].forEach((call,apiindex)=>{
+              past += call
+              steps_api[stepindex][apiindex].push(past)
+            })
+          })
+        }
+
+        //STEPS
+        Object.keys(steps).forEach(stepindex=>{
+
+          //APIS
+          Object.keys(steps_api[stepindex]).forEach(apiindex=>{
+            datasets.unshift({
+              label: '',
+              backgroundColor: this.chartColorSteps[stepindex]+'10',
+              borderColor: this.chartColorSteps[stepindex],
+              borderDash: [5,5],
+              borderWidth: 1,
+              lineTension: 0.1,
+              fill:false,
+              data: steps_api[stepindex][apiindex]
+            })
+          })
+
+          datasets.unshift({
+            label: 'STEP'+(Number(stepindex)+1),
+            backgroundColor: this.chartColorSteps[stepindex]+'10',
+            borderColor: this.chartColorSteps[stepindex],
+            borderWidth: 2,
+            lineTension: 0.1,
+            fill:true,
+            data: steps[stepindex]
+          })
+        })
+
+          //TOTAL
+        datasets.push({
+            label: 'Total',
+              backgroundColor: this.chartColorTotal+'10',
+              borderColor: this.chartColorTotal,
+              borderWidth: 5,
+              lineTension: 0.1,
+              fill:false,
+              data: totals
+        })
+
+        this.datacollection = {
+          labels: Array(Number(this.param.num)).fill(0).map((_, i) => i + 1),
+          datasets: datasets
+        }
+      },
     }
   });
 </script>

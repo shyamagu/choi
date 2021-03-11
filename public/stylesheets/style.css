@@ -238,6 +238,12 @@ body {
   color:#F00;
 }
 
+.chartarea{
+  width:70%;
+  min-width:600px;
+  margin:auto;
+}
+
 .loader,
 .loader:before,
 .loader:after {
