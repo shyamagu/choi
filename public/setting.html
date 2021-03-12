@@ -30,7 +30,7 @@
     <div class="startbuttonarea">
       <span v-if="statusMessage" class="resultcolor">{{statusMessage}}</span>
       <button v-if="processing" class="startbutton"><div class="loader"></div></button>
-      <button v-if="!processing" class="startbutton" v-on:click="startChoi">Send Request</button>
+      <button v-if="!processing" class="startbutton" v-on:click="startChoi">Start Request</button>
       <div class="paramtitle">number of times <input class="paramfield" type="number" v-model="param.num" placeholder="the number of times"/></div>
       <div class="paramtitle">interval (ms)   <input class="paramfield" type="number" v-model="param.interval" placeholder="ex) 100"/></div>
       <div class="showChartArea">
