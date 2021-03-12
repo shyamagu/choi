@@ -20,7 +20,11 @@
     <!-- Export Import button-->
     <div class="startbuttonarea">
       <input type="file" ref="file" style="display:none" accept="json" v-on:change="importSetting()"/>
-      <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button></div>
+      <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button><button class="exportimportbutton" v-on:click="turnshowOption">option</button></div>
+      <div v-if="showOption" class="showChartArea">
+        <button v-on:click="removeAllResult">remove all result</button>
+        <button v-on:click="downloadPerfData" v-if="allPerfData.length > 0">download all Perf. data</button>
+      </div>
     </div>
     <!-- Send Request button and params -->
     <div class="startbuttonarea">
@@ -29,7 +33,12 @@
       <button v-if="!processing" class="startbutton" v-on:click="startChoi">Send Request</button>
       <div class="paramtitle">number of times <input class="paramfield" type="number" v-model="param.num" placeholder="the number of times"/></div>
       <div class="paramtitle">interval (ms)   <input class="paramfield" type="number" v-model="param.interval" placeholder="ex) 100"/></div>
-      <div><button v-on:click="showLatency">{{showLatencyFlag? "▲ hide Perf. graph":"▼ show Perf. graph" }}</button></div>
+      <div class="showChartArea">
+        <button v-on:click="showLatency">{{showLatencyFlag? "▲ hide Perf. graph":"▼ show Perf. graph" }}</button>
+        <div v-if="showLatencyFlag">
+          show total latency<input name="showTotal" type="checkbox" v-model="showTotal" v-on:change="showChart()"/>
+        </div>
+      </div>
     </div>
     <div v-if="showLatencyFlag">
       <div class="chartarea"><line-chart :chart-data="datacollection" :options="chartOptions"/></div>
@@ -39,7 +48,7 @@
     <div class="relay" v-for="(relay,index) in relays">
       <div class="relayborder">
         <div class="relaytitle">
-          <p class="idtitle"># STEP {{++index}}</p>
+          <p class="idtitle"># SERVER {{++index}}</p>
           <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
         </div>
         <table class="relaysetting">
@@ -151,10 +160,14 @@
       statusMessage:"",
       errorMessage:"",
       processing:false, // to show loading
-      allPerfData:[],
       showLatencyFlag:false,
+      showOption:false,
+      allPerfData:[],
+      perf_total_chart_data:[],
+      perf_steps_chart_data:{},
+      perf_steps_apis_chart_data:{},
+      showTotal:true,
       datacollection:null,
-      all_chart_data:[],
       chartOptions:{
         responsive: true,
         maintainAspectRatio: false,
@@ -212,7 +225,18 @@
           interval = 0
         }
         this.allPerfData = []
-        this.all_chart_data = []
+        //initialize for chart
+        this.perf_total_chart_data=[]
+        this.perf_steps_chart_data={}
+        this.perf_steps_apis_chart_data={}
+        for(let i in this.relays){
+          this.perf_steps_chart_data[i]= []
+          this.perf_steps_apis_chart_data[i] = {}
+          for(let j=0;j<this.relays[i].apicalls;j++){
+            this.perf_steps_apis_chart_data[i][j] = []
+          }
+        }
+
         //refresh chart
         this.showChart()
 
@@ -231,7 +255,6 @@
           let first = this.relays[0]
           //init one perf data
           let oneResult = {}
-          
 
           fetch(first.url,{
             method:'POST',
@@ -249,12 +272,8 @@
             oneResult["totalTime"]= totalTime
             let stepResults = []
             
-            //init one_chart_data
-            let one_chart_data = {}
-            one_chart_data["total"] = totalTime
-            one_chart_data["steps_ids"] = []
-            one_chart_data["steps"] = {}
-            one_chart_data["steps_apis"] = {}
+            //set total to chartdata
+            this.perf_total_chart_data.push(totalTime)
 
             // Show the result for each STEP
             for(let i in data){
@@ -264,11 +283,6 @@
               let stepResult = {}
               stepResult["stepUrl"]  = result.url
               stepResult["stepTime"] = result.elapsed
-
-              //set chartdata
-              one_chart_data["steps_ids"].push(i)
-              one_chart_data["steps"][i] = result.elapsed
-              one_chart_data["steps_apis"][i] = {}
 
               for(let j in this.relays){
                 if(result.id === this.relays[j].id){
@@ -284,7 +298,16 @@
                   stepResult["apiCallUrls"] = this.relays[j].apicallurls
 
                   //set chartdata
-                  one_chart_data["steps_apis"][i] = result.calltimes
+                  this.perf_steps_chart_data[j].push(result.elapsed)
+                  let api_trunaround = 0
+                  if(i<data.length-1) {
+                    api_trunaround = data[Number(i)+1].elapsed
+                  }
+
+                  for(let k=0;k<this.relays[j].apicalls;k++){
+                    api_trunaround += result.calltimes[k]
+                    this.perf_steps_apis_chart_data[j][k].push(api_trunaround)
+                  }
 
                   if(result.error){
                     var next = Number(j)+1;
@@ -298,10 +321,8 @@
 
               stepResults.push(stepResult)
             }
-            //show chart
-            this.all_chart_data.push(one_chart_data)
-            this.showChart()
 
+            this.showChart()
             loadedCount++;
             oneResult["stepResults"]=stepResults
             this.allPerfData.push(oneResult)
@@ -349,15 +370,33 @@
         link.download = 'choi.json'
         link.click()
       },
+      downloadPerfData:function(){
+        let blob = new Blob([JSON.stringify(this.allPerfData)],{type:'application/json'})
+        let link = document.createElement('a')
+        link.href = window.URL.createObjectURL(blob)
+        link.download = 'choi_perf_all.json'
+        link.click()
+      },
       importSetting:function(){
         const file = this.$refs.file.files[0]
         if(file){
           const reader = new FileReader();
           reader.onload = e =>{
             this.relays = JSON.parse(e.target.result)
-            this.id = this.relays.length + 1
+            importId = 2;
+            this.relays.forEach(relay=>{
+              if(importId < Number(relay.id)){
+                importId = Number(relay.id)
+              }
+            })
+            this.id = importId+1
             this.statusMessage = "Setting imported"
             this.errorMessage = ""
+            this.allPerfData = []
+            this.perf_total_chart_data = []
+            this.perf_steps_chart_data= {}
+            this.perf_steps_apis_chart_data={}
+            this.showChart()
           }
           reader.readAsText(file)
         }
@@ -375,15 +414,27 @@
           }
         })
 
-        //pending
-        //valueList.forEach((value,index)=>{
-        //  console.log(typeof value)
-        //  if(value.match(keyword)){
-        //    returnJsonText[keyList[index]] = value
-        //  }
-        //})
-
         return returnJsonText
+      },
+      turnshowOption:function(){
+        this.showOption = !this.showOption
+      },
+      removeAllResult:function(){
+        this.allPerfData = []
+        this.perf_total_chart_data = []
+        this.perf_steps_chart_data = {}
+        this.perf_steps_apis_chart_data = {}
+        this.statusMessage = ""
+        this.errorMessage = ""
+        this.relays.map(relay=>{
+          relay.resultcode=""
+          relay.resulttime=""
+          relay.apicalltimes=[]
+          relay.apicallresults=[]
+          relay.processenv=""
+        })
+        this.showChart()
+
       },
       showLatency:function(){
         this.showChart()
@@ -392,53 +443,19 @@
       showChart: function(){
 
         let datasets = []
-
-        if(!this.all_chart_data || this.all_chart_data.length==0){
+        let times = this.perf_total_chart_data.length??0
+        if(times === 0){
           this.datacollection = {
           labels: Array(Number(this.param.num)).fill(0).map((_, i) => i + 1),
           datasets: datasets
           }
           return
         }
-        
-        let one_chart_data = this.all_chart_data[0]
-        let totals = []
-        let steps = {}
-        let steps_api = {}
-        let laststepindex = ""
-        Object.keys(one_chart_data.steps).forEach(stepindex=>{
-          laststepindex = stepindex
-          steps[stepindex]=[]
-          steps_api[stepindex] = {}
 
-          one_chart_data.steps_apis[stepindex].forEach((call,apiindex)=>{
-            steps_api[stepindex][apiindex] = []
-          })
-        })
-
-        for(let time=0;time<this.all_chart_data.length;time++){
-          let one = this.all_chart_data[time]
-          totals.push(one.total)
-
-          Object.keys(one.steps).forEach(stepindex=>{
-            steps[stepindex].push(one.steps[stepindex])
-
-            let past = 0
-            if(stepindex!=laststepindex){
-              past = one.steps[Number(stepindex)+1]
-            }
-            one.steps_apis[stepindex].forEach((call,apiindex)=>{
-              past += call
-              steps_api[stepindex][apiindex].push(past)
-            })
-          })
-        }
-
-        //STEPS
-        Object.keys(steps).forEach(stepindex=>{
-
-          //APIS
-          Object.keys(steps_api[stepindex]).forEach(apiindex=>{
+        //for each step
+        Object.keys(this.perf_steps_chart_data).forEach(stepindex=>{
+          //for each api calls
+          Object.keys(this.perf_steps_apis_chart_data[stepindex]).forEach(apiindex=>{
             datasets.unshift({
               label: '',
               backgroundColor: this.chartColorSteps[stepindex]+'10',
@@ -447,31 +464,34 @@
               borderWidth: 1,
               lineTension: 0.1,
               fill:false,
-              data: steps_api[stepindex][apiindex]
+              data: this.perf_steps_apis_chart_data[stepindex][apiindex]
             })
           })
 
           datasets.unshift({
-            label: 'STEP'+(Number(stepindex)+1),
+            label: 'SERVER'+(Number(stepindex)+1),
             backgroundColor: this.chartColorSteps[stepindex]+'10',
             borderColor: this.chartColorSteps[stepindex],
             borderWidth: 2,
             lineTension: 0.1,
             fill:true,
-            data: steps[stepindex]
+            data: this.perf_steps_chart_data[stepindex]
           })
+
         })
 
-          //TOTAL
-        datasets.push({
-            label: 'Total',
-              backgroundColor: this.chartColorTotal+'10',
-              borderColor: this.chartColorTotal,
-              borderWidth: 5,
-              lineTension: 0.1,
-              fill:false,
-              data: totals
-        })
+        //TOTAL
+        if(this.showTotal){
+          datasets.push({
+            label: 'BROWSER',
+            backgroundColor: this.chartColorTotal+'10',
+            borderColor: this.chartColorTotal,
+            borderWidth: 5,
+            lineTension: 0.1,
+            fill:false,
+            data: this.perf_total_chart_data
+          })
+        }
 
         this.datacollection = {
           labels: Array(Number(this.param.num)).fill(0).map((_, i) => i + 1),

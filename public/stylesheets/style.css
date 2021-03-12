@@ -132,6 +132,11 @@ body {
   width:70px;
 }
 
+.showChartArea{
+  margin-top:5px;
+  font-size: 14px;
+}
+
 .addcallbutton{
   color:#FFF;
   background-color:blueviolet;
