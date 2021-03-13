@@ -4,10 +4,19 @@ The purpose of this application is that to test/verificate/evaluate your infrast
 It's easy to create cloud infrastraucre but it's still necesarry to prepare application/middleware to check operations, network, monitoring tools on the infrastracture from the view of application layer.
 
 "choi" (check of infrastracture) is a super simple web-application using vuejs and node-express and this app can easily relay http(s) request, call external apis and output custom log like below.
-In short, "choi" can emulates a real application which you or your team will developed, so you can focus on your infrastracture/network/monitoring and the operation verification.
+You can check your network communication path and your monitoring system.
+
+In short, "choi" can emulates a real application which you or your team will developed and can also emulates error-case, so you can focus on your infrastracture/network/monitoring verification.
 
 
 ![choi overview](./choi_overview.png)
+
+
+And "choi" shows an each latency of your network like below.
+
+![choi sample latency graph](./choi_latency_sample.png)
+
+
 
 # How to setup
 
@@ -90,7 +99,7 @@ An output json file includes all settings and all result.
 
 # Evaluate your infrastracture
 
-Using choi, you can evaluate your monitoring tool, network　communication path and the infrastracture to emulate application which has not yet been developed.
+Using choi, you can test your monitoring tool, verify networkcommunication path and latency to emulate application which has not yet been developed.
 
 ## Tips for Azure User
 
