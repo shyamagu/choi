@@ -20,10 +20,31 @@
     <!-- Export Import button-->
     <div class="startbuttonarea">
       <input type="file" ref="file" style="display:none" accept="json" v-on:change="importSetting()"/>
-      <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button><button class="exportimportbutton" v-on:click="turnshowOption">option</button></div>
+      <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button><button class="exportimportbutton" v-on:click="turnshowOption">options</button></div>
       <div v-if="showOption" class="showChartArea">
-        <button v-on:click="removeAllResult">remove all result</button>
-        <button v-on:click="downloadPerfData" v-if="allPerfData.length > 0">download all Perf. data</button>
+        <div>
+          <button v-on:click="removeAllResult">remove all result</button>
+          <button v-on:click="downloadPerfData" v-if="allPerfData.length > 0">download all Perf. data</button>
+          <button v-on:click="getHeaders">get headers</button>
+          <button v-on:click="showHints">{{choiHintsVisible? "hide hints":"show hints"}}</button>
+        </div>
+        <details v-if="headersResult" class="headersresultarea" open>
+          <summary class="headerstitle">Headers</summary>
+          <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="headersKey" placeholder="keyword"/></div>
+          <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(headersKey,headersResult),null,"\t")}}</pre></div>
+        </details>
+        <div v-if="choiHintsVisible && choiHints.length > 0" class="hint_talbe">
+          <table>
+            <tr v-for="hint in choiHints">
+              <td>
+                {{hint.name}}
+              </td>
+              <td>
+                <pre>{{hint.hint}}</pre>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
     <!-- Send Request button and params -->
@@ -48,11 +69,12 @@
     <div class="relay" v-for="(relay,index) in relays">
       <div class="relayborder">
         <div class="relaytitle">
-          <p class="idtitle"># SERVER {{++index}}</p>
+          <p class="idtitle"># SERVER {{index+1}}</p>
           <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
         </div>
         <table class="relaysetting">
-          <tr><td class="urltitle">choi uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/></td></td></tr>
+          <tr><td class="urltitle">choi uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/>&nbsp;<button v-on:click="setHeaders(index)">set Headers</button></td></tr>
+          <tr v-if="relay.setheaders"><td>headers</td><td colspan=5><textarea class="urlinput" rows="3" v-model="relay.headers" placeholder='ex) {"choi-get-headers":"true"} *use double-quotation'></textarea></td></tr>
           <tr>
             <td>options</td>
             <td v-if="!relay.timeout">delay:<input class="numberinput" v-model="relay.delay" placeholder="ex) 200"/>(ms),</td>
@@ -127,8 +149,9 @@
             </td>
           </tr>
         </table>
-        <div v-if="!relay.resultcode" class="result">-----</div>
+        <div v-if="!relay.resultcode && !relay.errorresult" class="result">-----</div>
         <div v-if="relay.resultcode" class="result resultcolor">code:{{relay.resultcode}}, elapesd time:{{relay.resulttime}}(ms)</div>
+        <div v-if="relay.errorresult" class="result errorcolor">{{relay.errorresult}}</div>
       </div>
       <div class="arrow"></div>
     </div>
@@ -153,8 +176,8 @@
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
       ],
       param:{num:1,interval:1000},
       statusMessage:"",
@@ -162,6 +185,10 @@
       processing:false, // to show loading
       showLatencyFlag:false,
       showOption:false,
+      headersResult:"",
+      headersKey:"",
+      choiHintsVisible:false,
+      choiHints:[],
       allPerfData:[],
       perf_total_chart_data:[],
       perf_steps_chart_data:{},
@@ -201,7 +228,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"",errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
         this.id++;
       },
       // Send request
@@ -245,6 +272,7 @@
           this.relays.filter((relay)=>{
             relay.resultcode = "";
             relay.resulttime = "";
+            relay.errorresult = "";
             relay.apicallresults = [];
             relay.apicallstatuses= [];
             relay.apicalltimes= [];
@@ -256,11 +284,11 @@
           //init one perf data
           let oneResult = {}
 
+          let jsonheader = first.headers? JSON.parse(first.headers) : {}
+
           fetch(first.url,{
             method:'POST',
-            headers:{
-              'Content-Type':'application/json',
-            },
+            headers:jsonheader,
             body:JSON.stringify(this.relays)
           })
           .then(response => response.json())
@@ -310,10 +338,8 @@
                   }
 
                   if(result.error){
-                    var next = Number(j)+1;
-                    this.relays[next].result = result.error
-                    this.errorMessage = "STEP ERROR"
-                    console.log(result.error)
+                    this.relays[Number(j)+1].errorresult = result.error
+                    this.errorMessage = "SERVER "+(Number(j)+2)+" ERROR"
                   }
                   break
                 }
@@ -426,9 +452,13 @@
         this.perf_steps_apis_chart_data = {}
         this.statusMessage = ""
         this.errorMessage = ""
+        this.headersResult = ""
+        this.choiHintsVisible = false
+        this.choiHints = []
         this.relays.map(relay=>{
           relay.resultcode=""
           relay.resulttime=""
+          relay.errorresult = ""
           relay.apicalltimes=[]
           relay.apicallresults=[]
           relay.processenv=""
@@ -498,6 +528,43 @@
           datasets: datasets
         }
       },
+      setHeaders:function(index){
+        this.relays[index].setheaders = true
+      },
+      getHeaders:function(){
+        fetch("/choi/headers",{
+            method:'GET',
+            headers:{
+              'choi-get-headers':'true',
+              'Content-Type':'application/json',
+            }
+          })
+          .then(response => response.json())
+          .then(data=>{
+            this.headersResult = data
+          })
+          .catch((error)=>{
+            this.headersResult = error
+          });
+      },
+      showHints:function(){
+        this.choiHintsVisible = !this.choiHintsVisible
+
+        fetch("/choi/hints",{
+            method:'GET',
+            headers:{
+              'choi-get-hints':'true',
+              'Content-Type':'application/json',
+            }
+          })
+          .then(response => response.json())
+          .then(data=>{
+            this.choiHints = data
+          })
+          .catch((error)=>{
+            this.choiHints = {name:"error",hint:error}
+          });
+      }
     }
   });
 </script>

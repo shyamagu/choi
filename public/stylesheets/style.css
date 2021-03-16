@@ -45,7 +45,11 @@ body {
 }
 
 .resultcolor{
-  background-color: #fff462;
+  background-color: #ff9;
+}
+
+.errorcolor{
+  background-color: #f99;
 }
 
 .logborder{
@@ -65,7 +69,10 @@ body {
 
 .callresultdetail{
   font-size: 12px;
-  width:450px;
+  width:100%;
+  overflow-y: scroll;
+  height:150px;
+  resize: vertical;
 }
 
 .processenvarea{
@@ -239,6 +246,35 @@ body {
 .callresultarea{
   text-align:left;
 }
+
+.headerstitle{
+  background-color: #FFC;
+}
+
+.headersresultarea{
+  margin-top:5px;
+  text-align:left;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #CCC;
+}
+
+.hint_talbe{
+  margin-top:5px;
+  font-size: 10px;
+  border: 2px solid #ccc;
+  border-collapse: collapse;
+}
+
+.hint_talbe tr:nth-child(even) {
+	background: #eee;
+}
+.hint_talbe tr:hover {
+	background: #ffc;
+}
+
+.hint_talbe
+
 .error{
   color:#F00;
 }
