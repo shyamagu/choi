@@ -22,7 +22,7 @@ And "choi" shows an each latency of your network like below.
 
 For each machine/vm/container
 1. install nodejs
-2. git clone https://github.com/shyamagu/choi.git
+2. git clone -b release https://github.com/shyamagu/choi.git
 3. cd /choi
 4. npm install
 5. npm start
