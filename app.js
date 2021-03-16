@@ -22,6 +22,19 @@ global.fetch = require('node-fetch')
 
 const _sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+app.use('/choi/hints', function(req,res,next){
+    let choiGetHintsFlag = req.headers["choi-get-hints"];
+    if(choiGetHintsFlag==="true"){
+        let hints = []
+        hints.push({name:"Azure instance metadata", hint:"GET http://169.254.169.254/metadata/instance?api-version=2020-12-01 \nw/header {\"Metadata\":\"true\"}"})
+        hints.push({name:"Azure instance shcedule event", hint:"GET http://169.254.169.254/metadata/scheduledevents?api-version=2019-01-01 \nw/header {\"Metadata\":\"true\"}"})
+        hints.push({name:"Azure AD token and headers", hint:"use \"x-ms-token-aad-id-token\" and w/header {\"Authorization\": \"Bearer %TOKEN%}"})
+        res.json(hints)
+    }else{
+        next()
+    }
+});
+
 app.use('/choi/headers', function(req,res,next){
     let choiGetHeaderFlag = req.headers["choi-get-headers"];
     if(choiGetHeaderFlag==="true"){
