@@ -72,6 +72,7 @@ body {
   width:100%;
   overflow-y: scroll;
   height:150px;
+  resize: vertical;
 }
 
 .processenvarea{
