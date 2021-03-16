@@ -20,10 +20,18 @@
     <!-- Export Import button-->
     <div class="startbuttonarea">
       <input type="file" ref="file" style="display:none" accept="json" v-on:change="importSetting()"/>
-      <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button><button class="exportimportbutton" v-on:click="turnshowOption">option</button></div>
+      <div><button class="exportimportbutton" v-on:click="exportSetting">export</button><button class="exportimportbutton" v-on:click="$refs.file.click()">import</button><button class="exportimportbutton" v-on:click="turnshowOption">options</button></div>
       <div v-if="showOption" class="showChartArea">
+      <div>
         <button v-on:click="removeAllResult">remove all result</button>
         <button v-on:click="downloadPerfData" v-if="allPerfData.length > 0">download all Perf. data</button>
+        <button v-on:click="getHeaders">get headers</button>
+      </div>
+        <details v-if="headersResult" class="headersresultarea" open>
+          <summary class="headerstitle">Headers</summary>
+          <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="headersKey" placeholder="keyword"/></div>
+          <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(headersKey,headersResult),null,"\t")}}</pre></div>
+        </details>
       </div>
     </div>
     <!-- Send Request button and params -->
@@ -48,11 +56,12 @@
     <div class="relay" v-for="(relay,index) in relays">
       <div class="relayborder">
         <div class="relaytitle">
-          <p class="idtitle"># SERVER {{++index}}</p>
+          <p class="idtitle"># SERVER {{index+1}}</p>
           <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
         </div>
         <table class="relaysetting">
-          <tr><td class="urltitle">choi uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/></td></td></tr>
+          <tr><td class="urltitle">choi uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/>&nbsp;<button v-on:click="setHeaders(index)">set Headers</button></td></tr>
+          <tr v-if="relay.setheaders"><td>headers</td><td colspan=5><textarea class="urlinput" rows="3" v-model="relay.headers" placeholder='ex) {"choi-get-headers":"true"} *use double-quotation'></textarea></td></tr>
           <tr>
             <td>options</td>
             <td v-if="!relay.timeout">delay:<input class="numberinput" v-model="relay.delay" placeholder="ex) 200"/>(ms),</td>
@@ -153,8 +162,8 @@
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
       ],
       param:{num:1,interval:1000},
       statusMessage:"",
@@ -162,6 +171,8 @@
       processing:false, // to show loading
       showLatencyFlag:false,
       showOption:false,
+      headersResult:"",
+      headersKey:"",
       allPerfData:[],
       perf_total_chart_data:[],
       perf_steps_chart_data:{},
@@ -201,7 +212,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
         this.id++;
       },
       // Send request
@@ -256,11 +267,11 @@
           //init one perf data
           let oneResult = {}
 
+          let jsonheader = first.headers? JSON.parse(first.headers) : {}
+
           fetch(first.url,{
             method:'POST',
-            headers:{
-              'Content-Type':'application/json',
-            },
+            headers:jsonheader,
             body:JSON.stringify(this.relays)
           })
           .then(response => response.json())
@@ -498,6 +509,25 @@
           datasets: datasets
         }
       },
+      setHeaders:function(index){
+        this.relays[index].setheaders = true
+      },
+      getHeaders:function(){
+        fetch("/choi/headers",{
+            method:'GET',
+            headers:{
+              'choi-get-headers':'true',
+              'Content-Type':'application/json',
+            }
+          })
+          .then(response => response.json())
+          .then(data=>{
+            this.headersResult = data
+          })
+          .catch((error)=>{
+            this.headersResult = error
+          });
+      }
     }
   });
 </script>

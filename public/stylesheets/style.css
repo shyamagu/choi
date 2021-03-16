@@ -65,7 +65,9 @@ body {
 
 .callresultdetail{
   font-size: 12px;
-  width:450px;
+  width:100%;
+  overflow-y: scroll;
+  height:150px;
 }
 
 .processenvarea{
@@ -239,6 +241,19 @@ body {
 .callresultarea{
   text-align:left;
 }
+
+.headerstitle{
+  background-color: #FFC;
+}
+
+.headersresultarea{
+  margin-top:5px;
+  text-align:left;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #CCC;
+}
+
 .error{
   color:#F00;
 }

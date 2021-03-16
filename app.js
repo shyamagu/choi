@@ -22,6 +22,15 @@ global.fetch = require('node-fetch')
 
 const _sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+app.use('/choi/headers', function(req,res,next){
+    let choiGetHeaderFlag = req.headers["choi-get-headers"];
+    if(choiGetHeaderFlag==="true"){
+        res.json(req.headers)
+    }else{
+        next()
+    }
+});
+
 app.use('/',async function (req,res,next){
     if(!Object.keys(req.body).length){
         //return setting page if there is no request relay data.
@@ -124,11 +133,11 @@ app.use('/',async function (req,res,next){
             if(relays.length > 0){
                 let nextrequest = relays[0]
                 try{
+                    let jsonheader = nextrequest.headers? JSON.parse(nextrequest.headers) : {}
+
                     const response = await fetch(nextrequest.url,{
                         method:'POST',
-                        headers:{
-                        'Content-Type':'application/json',
-                        },
+                        headers:jsonheader,
                         body:JSON.stringify(relays)
                     })
 
