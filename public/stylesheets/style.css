@@ -45,7 +45,11 @@ body {
 }
 
 .resultcolor{
-  background-color: #fff462;
+  background-color: #ff9;
+}
+
+.errorcolor{
+  background-color: #f99;
 }
 
 .logborder{

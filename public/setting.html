@@ -136,8 +136,9 @@
             </td>
           </tr>
         </table>
-        <div v-if="!relay.resultcode" class="result">-----</div>
+        <div v-if="!relay.resultcode && !relay.errorresult" class="result">-----</div>
         <div v-if="relay.resultcode" class="result resultcolor">code:{{relay.resultcode}}, elapesd time:{{relay.resulttime}}(ms)</div>
+        <div v-if="relay.errorresult" class="result errorcolor">{{relay.errorresult}}</div>
       </div>
       <div class="arrow"></div>
     </div>
@@ -162,8 +163,8 @@
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
       ],
       param:{num:1,interval:1000},
       statusMessage:"",
@@ -212,7 +213,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
+        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"",errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
         this.id++;
       },
       // Send request
@@ -256,6 +257,7 @@
           this.relays.filter((relay)=>{
             relay.resultcode = "";
             relay.resulttime = "";
+            relay.errorresult = "";
             relay.apicallresults = [];
             relay.apicallstatuses= [];
             relay.apicalltimes= [];
@@ -321,10 +323,8 @@
                   }
 
                   if(result.error){
-                    var next = Number(j)+1;
-                    this.relays[next].result = result.error
-                    this.errorMessage = "STEP ERROR"
-                    console.log(result.error)
+                    this.relays[Number(j)+1].errorresult = result.error
+                    this.errorMessage = "SERVER "+(Number(j)+2)+" ERROR"
                   }
                   break
                 }
@@ -440,6 +440,7 @@
         this.relays.map(relay=>{
           relay.resultcode=""
           relay.resulttime=""
+          relay.errorresult = ""
           relay.apicalltimes=[]
           relay.apicallresults=[]
           relay.processenv=""
