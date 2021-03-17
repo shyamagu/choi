@@ -143,22 +143,25 @@ app.use('/',async function (req,res,next){
 
             let error = ""
             let data  = ""
+            let receivecode = ""
+            let response
             if(relays.length > 0){
                 let nextrequest = relays[0]
                 try{
                     let jsonheader = nextrequest.headers? JSON.parse(nextrequest.headers) : {}
 
-                    const response = await fetch(nextrequest.url,{
+                    response = await fetch(nextrequest.url,{
                         method:'POST',
                         headers:jsonheader,
                         body:JSON.stringify(relays)
                     })
 
                     //response from next choi
-                    const status = response.status
+                    receivecode = response.status
                     data = await response.json()
                 }catch(err){
                     logger.error(err)
+                    logger.error(response)
                     error = err
                 }
             }
@@ -169,7 +172,7 @@ app.use('/',async function (req,res,next){
             }
 
             let returnMessages = data ? data: []
-            returnMessages.unshift({id:thisrequest.id,url:thisrequest.url,code:code,elapsed:Date.now()-startTime,error:error.message,callstatuses:callstatuses,callresults:callresults,calltimes:calltimes,processenv:process.env})
+            returnMessages.unshift({id:thisrequest.id,url:thisrequest.url,code:code,resCode:receivecode,elapsed:Date.now()-startTime,error:error.message,callstatuses:callstatuses,callresults:callresults,calltimes:calltimes,processenv:process.env})
             res.json(returnMessages)
         }
     }
