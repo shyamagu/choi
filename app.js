@@ -4,12 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var cors = require('cors')
 var log4js = require('log4js')
-//var logger = require('morgan');
 log4js.configure('log4js.config.json')
 var logger = log4js.getLogger('choi')
 var app = express();
 
-//app.use(logger('dev'));
 app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
 
 app.use(express.json());
