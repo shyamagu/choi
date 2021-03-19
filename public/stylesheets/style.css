@@ -25,7 +25,7 @@ body {
 .main {
   padding: 0px 0px 10px 0px;
   width :70%;
-  min-width: 600px;
+  min-width: 700px;
   margin:auto;
   text-align: center;
   background-color: #FFF;
@@ -34,7 +34,7 @@ body {
 .relay {
   margin:auto;
   width: 70%;
-  min-width: 600px;
+  min-width: 700px;
 }
 
 .relayborder{
@@ -191,7 +191,7 @@ body {
   text-align: right;
   margin:auto;
   width: 70%;
-  min-width: 600px;
+  min-width: 700px;
   margin-bottom: 10px;
 }
 
@@ -303,7 +303,7 @@ body {
 
 .chartarea{
   width:70%;
-  min-width:600px;
+  min-width:700px;
   margin:auto;
 }
 
