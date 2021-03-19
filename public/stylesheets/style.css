@@ -63,6 +63,7 @@ body {
   border-style: solid;
   border-width: 2px;
   border-color: #BF9DE0;
+  margin:auto;
   margin-top: 5px;
   margin-bottom: 5px;
 }
@@ -79,7 +80,8 @@ body {
   border-style: solid;
   border-width: 2px;
   border-color: #CCCCCC;
-  margin-top: 5px;
+  margin:auto;
+  margin-top: 10px;
   margin-bottom: 5px;
   width:450px;
 }
@@ -122,6 +124,25 @@ body {
   width:30px;
   margin: 2px;
 }
+.relay_setting{
+  width:80%;
+  text-align: left;
+  margin:auto;
+}
+
+.relay_setting_title{
+  text-align: center;
+  width:90px;
+  display: inline-block;
+  vertical-align:middle
+}
+
+.relay_setting_input{
+  display: inline-block;
+  vertical-align:middle
+}
+
+
 .relaysetting{
   text-align: left;
   margin:0px auto 0px auto;
@@ -260,6 +281,7 @@ body {
 }
 
 .hint_talbe{
+  text-align: left;
   margin-top:5px;
   font-size: 10px;
   border: 2px solid #ccc;

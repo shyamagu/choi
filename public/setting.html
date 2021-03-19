@@ -35,16 +35,19 @@
         </details>
         <div v-if="choiHintsVisible && choiHints.length > 0" class="hint_talbe">
           <table>
-            <tbody>
-              <tr v-for="hint in choiHints">
-                <td>
-                  {{hint.name}}
-                </td>
-                <td>
-                  <pre>{{hint.hint}}</pre>
-                </td>
-              </tr>
-            </tbody>
+            <caption>Choi Hints</caption>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Hint</th>
+            </tr>
+            <tr v-for="hint in choiHints">
+              <td>
+                {{hint.name}}
+              </td>
+              <td>
+                <pre>{{hint.hint}}</pre>
+              </td>
+            </tr>
           </table>
         </div>
       </div>
@@ -74,83 +77,116 @@
           <p class="idtitle"># SERVER {{index+1}}</p>
           <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
         </div>
-        <table class="relaysetting">
-          <tr><td class="urltitle">choi uri</td><td colspan=5><input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/>&nbsp;<button v-on:click="setHeaders(index)">set Headers</button></td></tr>
-          <tr v-if="relay.setheaders"><td>headers</td><td colspan=5><textarea class="urlinput" rows="3" v-model="relay.headers" placeholder='ex) {"choi-get-headers":"true"} *use double-quotation'></textarea></td></tr>
-          <tr>
-            <td>options</td>
-            <td v-if="!relay.timeout">delay:<input class="numberinput" v-model="relay.delay" placeholder="ex) 200"/>(ms),</td>
-            <td v-if="!relay.timeout">error:<input name="error" type="checkbox" v-model="relay.error"/><span v-if="!relay.error">,</span></td>
-            <td v-if="relay.error">code:<input class="numberinput" name="errorcode" type="number" v-model="relay.code"/></td>
-            <td v-if="!relay.error">timeout:<input name="timeout" type="checkbox" v-model="relay.timeout"/></td>
-            <td><button class="addlogbutton"  v-on:click="addLogfield(relay.id)">+ Log</button></td>
-          </tr>
-          <tr v-for="i of relay.lognums" :key="i">
-            <td>&nbsp;</td>
-            <td colspan="5" class="logborder">
-              <select v-model="relay.loglevels[i-1]">
-                <option v-for="level in loglevels" v-bind:value="level.value">
-                  {{ level.text }}
-                </option>
-              </select>
-              <input class="urlinput" v-model="relay.logdetails[i-1]" placeholder="something to log"/>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div><button class="addcallbutton" v-on:click="addCallfield(relay.id)">+ call API</button></div> 
-            </td>
-          </tr>
-        </table>
-        <table class="relaysetting">
-          <tr>
-            <td>
-              <table class="callapiborder" v-for="i of relay.apicalls" :key="i">
-                <tr>
-                  <td>Method</td><td colspan=3>
-                    <select v-model="relay.apicallmethod[i-1]">
-                      <option v-for="option in options" v-bind:value="option.value">
-                        {{ option.text }}
-                      </option>
-                    </select>
-                  </td>
-                </tr>
-                <tr>
-                  <td>API url</td><td colspan=3><input class="urlinput" v-model="relay.apicallurls[i-1]" placeholder="ex) http://169.254.169.254/metadata/instance?api-version=2021-01-01"/></td>
-                </tr>
-                <tr>
-                  <td>headers<br>(JSON)</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.apicallheaders[i-1]" placeholder='ex) {"Metadata":"True"} *use double-quotation'></textarea></td>
-                </tr>
-                <tr v-if="relay.apicallmethod[i-1] === 'POST'">
-                  <td>body<br>(Text)</td><td colspan=3><textarea class="urlinput" rows="3" v-model="relay.apicallbody[i-1]" placeholder='ex) key=value'></textarea></td>
-                </tr>
-                <tr>
-                  <td class="callresult" v-if="!relay.apicallresults[i-1]" colspan=5>-----</td>
-                  <td calss="callresult" v-if="relay.apicallresults[i-1]" colspan=5>
-                    <details class="callresultarea">
-                      <summary class="resultcolor">code:{{relay.apicallstatuses[i-1]}}, elapsed time:{{relay.apicalltimes[i-1]}}(ms)</summary>
-                      <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.apiserchkeywords[i-1]" placeholder="keyword"/></div>
-                      <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.apiserchkeywords[i-1],relay.apicallresults[i-1]),null,"\t")}}</pre></div>
-                    </details>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-        <table class="relaysetting">
-          <tr>
-            <td>
-              <div v-if="relay.processenv" class="processenvarea">
-                <details class="callresultarea">
-                  <summary class="resultcolor">process.env of this server</summary>
-                  <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.processsearchkeyword" placeholder="keyword"/></div>
-                  <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.processsearchkeyword,relay.processenv),null,"\t")}}</pre></div>
-                </details>
+        <div class="relay_setting">
+          <div class="relay_setting_title">
+            choi uri
+          </div>
+          <div class="relay_setting_input">
+            <input class="urlinput" v-model="relay.url" placeholder="ex) http://host:port/path"/>&nbsp;<button v-on:click="setHeaders(index)">set Headers</button>            
+          </div>
+        </div>
+        <div class="relay_setting" v-if="relay.setheaders">
+          <div class="relay_setting_title">
+            headers
+          </div>
+          <div class="relay_setting_input">
+            <textarea class="urlinput" rows="3" v-model="relay.headers" placeholder='ex) {"choi-get-headers":"true"} *use double-quotation'></textarea>
+          </div>
+        </div>
+        <div class="relay_setting">
+          <div class="relay_setting_title">
+            options
+          </div>
+          <div class="relay_setting_input" v-if="!relay.timeout">
+            delay:<input class="numberinput" v-model="relay.delay" placeholder="ex) 200"/>(ms),
+            error:<input name="error" type="checkbox" v-model="relay.error"/><span v-if="!relay.error">,</span>
+          </div>
+          <div class="relay_setting_input" v-if="relay.error">
+            code:<input class="numberinput" name="errorcode" type="number" v-model="relay.code"/>
+          </div>
+          <div class="relay_setting_input" v-if="!relay.error">
+            timeout:<input name="timeout" type="checkbox" v-model="relay.timeout"/>
+          </div>
+          <div class="relay_setting_input">
+            <button class="addlogbutton"  v-on:click="addLogfield(relay.id)">+ Log</button>
+          </div>
+        </div>
+        <div class="relay_setting" v-for="i of relay.lognums" :key="i">
+          <div class="relay_setting_title">
+          </div>
+          <div class="relay_setting_input logborder">
+            <select v-model="relay.loglevels[i-1]">
+              <option v-for="level in loglevels" v-bind:value="level.value">
+                {{ level.text }}
+              </option>
+            </select>
+            <input class="urlinput" v-model="relay.logdetails[i-1]" placeholder="something to log"/>
+          </div>
+        </div>
+        <div class="relay_setting">
+          <div class="relay_setting_title">
+            <button class="addcallbutton" v-on:click="addCallfield(relay.id)">+ call API</button>
+          </div>
+        </div>
+        <div class="relay_setting" v-for="i of relay.apicalls" :key="i">
+          <div class="callapiborder">
+            <div>
+              <div class="relay_setting_title">
+                Method
               </div>
-            </td>
-          </tr>
-        </table>
+              <div class="relay_setting_input">
+                <select v-model="relay.apicallmethod[i-1]">
+                  <option v-for="option in options" v-bind:value="option.value">
+                    {{ option.text }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <div class="relay_setting_title">
+                API url
+              </div>
+              <div class="relay_setting_input">
+                <input class="urlinput" v-model="relay.apicallurls[i-1]" placeholder="ex) http://169.254.169.254/metadata/instance?api-version=2021-01-01"/>
+              </div>
+            </div>
+            <div>
+              <div class="relay_setting_title">
+                headers (JSON)
+              </div>
+              <div class="relay_setting_input">
+                <textarea class="urlinput" rows="3" v-model="relay.apicallheaders[i-1]" placeholder='ex) {"Metadata":"True"} *use double-quotation'></textarea>
+              </div>
+            </div>
+            <div v-if="relay.apicallmethod[i-1] === 'POST'">
+              <div class="relay_setting_title">
+                body (TEXT)
+              </div>
+              <div class="relay_setting_input">
+                <textarea class="urlinput" rows="3" v-model="relay.apicallbody[i-1]" placeholder='ex) key=value'></textarea>
+              </div>
+            </div>
+            <div class="callresult" v-if="!relay.apicallresults[i-1]" >
+              -----
+            </div>
+            <div class="callresult" v-if="relay.apicallresults[i-1]" >
+              <details class="callresultarea">
+                <summary class="resultcolor">code:{{relay.apicallstatuses[i-1]}}, elapsed time:{{relay.apicalltimes[i-1]}}(ms)</summary>
+                <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.apiserchkeywords[i-1]" placeholder="keyword"/></div>
+                <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.apiserchkeywords[i-1],relay.apicallresults[i-1]),null,"\t")}}</pre></div>
+              </details>
+            </div>
+          </div>
+        </div>
+        <div class="relay_setting">
+          <div v-if="relay.processenv" class="processenvarea">
+            <details class="callresultarea">
+              <summary class="resultcolor">process.env of this server</summary>
+              <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.processsearchkeyword" placeholder="keyword"/></div>
+              <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.processsearchkeyword,relay.processenv),null,"\t")}}</pre></div>
+            </details>
+          </div>
+        </div>
         <div v-if="!relay.resultcode && !relay.errorresult" class="result">-----</div>
         <div v-if="relay.resultcode" class="result resultcolor">code:{{relay.resultcode}}, elapesd time:{{relay.resulttime}}(ms)</div>
         <div v-if="relay.errorresult" class="result errorcolor">{{relay.errorresult}}</div>

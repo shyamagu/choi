@@ -7,6 +7,7 @@ var log4js = require('log4js')
 log4js.configure('log4js.config.json')
 var logger = log4js.getLogger('choi')
 var app = express();
+app.disable("x-powered-by");
 
 app.use(log4js.connectLogger(log4js.getLogger("http"), { level: 'auto' }));
 
