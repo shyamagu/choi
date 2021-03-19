@@ -35,14 +35,16 @@
         </details>
         <div v-if="choiHintsVisible && choiHints.length > 0" class="hint_talbe">
           <table>
-            <tr v-for="hint in choiHints">
-              <td>
-                {{hint.name}}
-              </td>
-              <td>
-                <pre>{{hint.hint}}</pre>
-              </td>
-            </tr>
+            <tbody>
+              <tr v-for="hint in choiHints">
+                <td>
+                  {{hint.name}}
+                </td>
+                <td>
+                  <pre>{{hint.hint}}</pre>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
