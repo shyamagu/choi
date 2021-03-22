@@ -306,6 +306,7 @@ body {
   width:70%;
   min-width:700px;
   margin:auto;
+  margin-bottom: 10px;
 }
 
 .loader,
