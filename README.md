@@ -59,7 +59,7 @@ If you want to customize log format, rollup setting and so on, please customize 
 FROM node:14-alpine
 
 # install Git & Bash
-RUN apk update && apk add git && apk add bash
+RUN apk update && apk add git && apk add bash && apk add dumb-init
 
 WORKDIR /choi
 
@@ -70,7 +70,7 @@ RUN yarn install
 
 EXPOSE 3000
 
-CMD ["./dumb-init","yarn","start"]
+CMD ["dumb-init","yarn","start"]
 ````
 
 ## DockerHub image for quick start
