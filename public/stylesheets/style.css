@@ -110,6 +110,30 @@ body {
 .idtitle{
   display: table-cell;
   text-align: left;
+  width: 165px;
+}
+
+.stepmemo{
+  font-size:20px;
+  font-weight: bold;
+  display: table-cell;
+  text-align: left;
+}
+
+.stepmemo_display{
+  font-size:20px;
+  width:400px;
+  font-weight: bold;
+  display: table-cell;
+  text-align: left;
+  background-color: lavender;
+}
+
+.stepmemofield{
+  font-size:20px;
+  width:300px;
+  vertical-align: middle;
+  background-color: lavender;
 }
 
 .deletebuttonarea{

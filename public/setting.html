@@ -7,6 +7,7 @@
   <title>choi</title>
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="stylesheet" href="/stylesheets/style.css">
+  <!-- swith vue.*.js (dev <-> min)-->
   <script src="/script/vue.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-chartjs/3.5.1/vue-chartjs.min.js" integrity="sha512-HIA1ey+BHvsI1zt1i4IC52HvVClIQ6pOUbuZ/YN0ko2DPgkJp50ADnA7XXiKU0k1TyLUrW4VCdB/n82Et9NGxA==" crossorigin="anonymous"></script>
@@ -77,7 +78,9 @@
       <div class="relayborder">
         <div class="relaytitle">
           <p class="idtitle"># SERVER {{index+1}}</p>
-          <span class="deletebuttonarea"><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
+          <p class="stepmemo_display" v-if="!relay.editMemo && relay.memo">{{relay.memo}}</p>
+          <p class="stepmemo" v-if="relay.editMemo"><input class="stepmemofield" v-model="relay.memo" placeholder="input memo" aria-label="step memo"/></p>
+          <span class="deletebuttonarea"><button class="deletebutton" v-on:click="memoRelay(relay)">/</button><button class="deletebutton" v-on:click="deleteRelay(relay.id)">x</button></span>
         </div>
         <div class="relay_setting">
           <div class="relay_setting_title">
@@ -216,8 +219,8 @@
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
-        {id: 2, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 1, url: "", editMemo:false, memo:"", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 2, url: "", editMemo:false, memo:"", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
       ],
       param:{num:1,interval:1000},
       statusMessage:"",
@@ -268,7 +271,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"",errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
+        this.relays.push({id: this.id, url: "", editMemo:false, memo:"", delay: "", error: false, code: 500, timeout: false, resultcode:"",resulttime:"",errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
         this.id++;
       },
       // Send request
@@ -411,6 +414,10 @@
       deleteRelay: function(deleteid){
         this.relays = this.relays.filter(relay=> relay.id != deleteid)
       },
+      // Edit a memo
+      memoRelay: function(relay){
+        relay.editMemo = !relay.editMemo
+      },
       addCallfield:function(parentId){
         for(let i in this.relays){
           if(parentId===this.relays[i].id){
@@ -430,7 +437,18 @@
         }
       },
       exportSetting:function(){
-        let blob = new Blob([JSON.stringify(this.relays)],{type:'application/json'})
+        let exportedJson = {}
+        exportedJson["data"] = this.relays
+        exportedJson["param"]= {}
+        exportedJson["param"]["num"]=this.param.num
+        exportedJson["param"]["interval"]=this.param.interval
+        exportedJson["chart"]= {}
+        exportedJson["chart"]["total"]=this.perf_total_chart_data
+        exportedJson["chart"]["steps"]=this.perf_steps_chart_data
+        exportedJson["chart"]["apis"] =this.perf_steps_apis_chart_data
+        exportedJson["perf"]= this.allPerfData
+
+        let blob = new Blob([JSON.stringify(exportedJson)],{type:'application/json'})
         let link = document.createElement('a')
         link.href = window.URL.createObjectURL(blob)
         link.download = 'choi.json'
@@ -448,20 +466,39 @@
         if(file){
           const reader = new FileReader();
           reader.onload = e =>{
-            this.relays = JSON.parse(e.target.result)
+            let importedJson = JSON.parse(e.target.result)
+
+            if(importedJson.data){
+              this.relays = importedJson.data
+              if(importedJson.param){
+                this.param.num = importedJson.param.num
+                this.param.interval = importedJson.param.interval
+              }
+              if(importedJson.chart){
+                this.perf_total_chart_data = importedJson.chart.total
+                this.perf_steps_chart_data = importedJson.chart.steps
+                this.perf_steps_apis_chart_data=importedJson.chart.apis
+              }
+              this.allPerfData = importedJson.perf
+            //compatibility ~v1.0.x
+            }else{
+              this.relays = importedJson
+              this.perf_total_chart_data = []
+              this.perf_steps_chart_data= {}
+              this.perf_steps_apis_chart_data={}
+              this.allPerfData = []
+            }
+            
             importId = 2;
             this.relays.forEach(relay=>{
               if(importId < Number(relay.id)){
                 importId = Number(relay.id)
               }
+              relay.editMemo =false;
             })
             this.id = importId+1
             this.statusMessage = "Setting imported"
             this.errorMessage = ""
-            this.allPerfData = []
-            this.perf_total_chart_data = []
-            this.perf_steps_chart_data= {}
-            this.perf_steps_apis_chart_data={}
             this.showChart()
           }
           reader.readAsText(file)
