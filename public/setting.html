@@ -34,7 +34,7 @@
         <details v-if="headersResult" class="headersresultarea" open>
           <summary class="headerstitle">Headers</summary>
           <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="headersKey" placeholder="keyword" aria-label="search key for headers"/></div>
-          <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(headersKey,headersResult),null,"\t")}}</pre></div>
+          <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(searchJsonR(headersKey,headersResult),null,"\t")}}</pre></div>
         </details>
         <div v-if="choiHintsVisible && choiHints.length > 0" class="hint_talbe">
           <table>
@@ -175,20 +175,20 @@
               -----
             </div>
             <div class="callresult" v-if="relay.apicallresults[i-1]" >
-              <details class="callresultarea">
+              <details class="callresultarea" :open="relay.apiserchkeywords[i-1] ? true : false">
                 <summary class="resultcolor">code:{{relay.apicallstatuses[i-1]}}, elapsed time:{{relay.apicalltimes[i-1]}}(ms)</summary>
                 <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.apiserchkeywords[i-1]" placeholder="keyword" aria-label="search key for api call result"/></div>
-                <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.apiserchkeywords[i-1],relay.apicallresults[i-1]),null,"\t")}}</pre></div>
+                <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(searchJsonR(relay.apiserchkeywords[i-1],relay.apicallresults[i-1]),null,"\t")}}</pre></div>
               </details>
             </div>
           </div>
         </div>
         <div class="relay_setting">
           <div v-if="relay.processenv" class="processenvarea">
-            <details class="callresultarea">
+            <details class="callresultarea" :open="relay.processsearchkeyword ? true : false">
               <summary class="resultcolor">process.env of this server</summary>
               <div class="serchkeywordinputarea">key search: <input class="serchkeywordinput" v-model="relay.processsearchkeyword" placeholder="keyword" aria-label="search key for process env"/></div>
-              <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(search(relay.processsearchkeyword,relay.processenv),null,"\t")}}</pre></div>
+              <div class="callresultdetail"><pre class="prefield">{{JSON.stringify(searchJsonR(relay.processsearchkeyword,relay.processenv),null,"\t")}}</pre></div>
             </details>
           </div>
         </div>
@@ -504,10 +504,46 @@
           reader.readAsText(file)
         }
       },
+      searchJsonR:function(keywords,json){
+
+        if(!keywords) return json
+
+        const keys = keywords.split(".").filter(Boolean)
+        if(keys.length === 1){
+            let returnJsonText = {}
+            Object.keys(json).forEach((key,index)=>{
+                if(key.match(keys[0])){
+                    returnJsonText[key] = Object.values(json)[index]
+                }
+            })
+            return returnJsonText
+        }else{
+            let targetKeys = []
+            let targetJson = json
+            for(let i=0;i<keys.length-1;i++){
+                if(targetJson[keys[i]]){
+                    targetKeys.push(keys[i])
+                    targetJson = targetJson[keys[i]]
+                }
+            }
+
+            let returnTargetJsonText = {}
+            Object.keys(targetJson).forEach((key,index)=>{
+                if(key.match(keys[keys.length-1])){
+                    returnTargetJsonText[key] = Object.values(targetJson)[index]
+                }
+            })
+
+            let targetNode = targetKeys.join(".")
+            let returnJsonText = {}
+            returnJsonText[targetNode] = returnTargetJsonText
+            return returnJsonText
+        }
+      },
       search:function(keyword, json){
         if(!keyword) return json
 
-        returnJsonText = {}
+        let returnJsonText = {}
         const keyList = Object.keys(json)
         const valueList = Object.values(json)
 
@@ -516,7 +552,6 @@
             returnJsonText[key] = valueList[index]
           }
         })
-
         return returnJsonText
       },
       turnshowOption:function(){
