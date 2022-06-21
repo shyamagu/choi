@@ -141,6 +141,11 @@ app.use('/',async function (req,res,next){
     if(thisrequest.error == true){
         res.status(thisrequest.code)
     }
+    //calculation fibonacci to stress
+    if(thisrequest.fibonacci > 0){
+        calcStressfullFibonacci(thisrequest.fibonacci)
+    }
+
     //timeout
     if(thisrequest.timeout == true){
         //not return the response and cause time-out
@@ -181,5 +186,9 @@ app.use('/',async function (req,res,next){
         res.json(returnMessages)
     }
 });
+
+function calcStressfullFibonacci(n){
+    return n <=1 ? n :calcStressfullFibonacci(n-1)+calcStressfullFibonacci(n-2);
+}
 
 module.exports = app;
