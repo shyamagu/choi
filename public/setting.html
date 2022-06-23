@@ -116,14 +116,7 @@
             <button class="addlogbutton"  v-on:click="addLogfield(relay.id)">+ Log</button>
           </div>
         </div>
-        <div class="relay_setting">
-          <div class="relay_setting_title">
-            stress
-          </div>
-          <div class="relay_setting_input" v-if="!relay.timeout && !relay.error">
-            calc. Fibonacci <input class="numberinput" type="number" v-model="relay.fibonacci" placeholder="ex) 10" aria-label="calcurate fibonacci nubmers"/> series
-          </div>
-        </div>
+
         <div class="relay_setting" v-for="i of relay.lognums" :key="i">
           <div class="relay_setting_title">
           </div>
@@ -136,6 +129,24 @@
             <input class="urlinput" v-model="relay.logdetails[i-1]" placeholder="something to log" aria-label="custom log detail"/>
           </div>
         </div>
+        
+        <div class="relay_setting">
+          <div class="relay_setting_title">
+            stress
+          </div>
+          <div class="relay_setting_input" v-if="!relay.timeout && !relay.error">
+            calc. Fibonacci <input class="numberinput" type="number" v-model="relay.fibonacci" placeholder="ex) 10" aria-label="calcurate fibonacci nubmers"/> series
+          </div>
+        </div>
+        <div class="relay_setting">
+          <div class="relay_setting_title">
+            chaos
+          </div>
+          <div class="relay_setting_input" v-if="!relay.timeout && !relay.error">
+            container shutdown:<input name="shutdown" type="checkbox" v-model="relay.shutdown" aria-label="shutdown the server after delay & calculate fibonacci"/>
+          </div>
+        </div>
+
         <div class="relay_setting">
           <div class="relay_setting_title">
             <button class="addcallbutton" v-on:click="addCallfield(relay.id)">+ call API</button>
@@ -227,8 +238,8 @@
       options:[{text:"GET",value:"GET"},{text:"POST",value:"POST"}],
       loglevels:[{text:"FATAL",value:"FATAL"},{text:"ERROR",value:"ERROR"},{text:"WARN",value:"WARN"},{text:"INFO",value:"INFO"},{text:"DEBUG",value:"DEBUG"},{text:"TRACE",value:"TRACE"}],
       relays:[
-        {id: 1, url: "", editMemo:false, memo:"", delay: "", fibonacci: 0, error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
-        {id: 2, url: "", editMemo:false, memo:"", delay: "", fibonacci: 0, error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 1, url: "", editMemo:false, memo:"", delay: "", fibonacci: 0, shutdown:false, error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
+        {id: 2, url: "", editMemo:false, memo:"", delay: "", fibonacci: 0, shutdown:false, error: false, code: 500, timeout: false, resultcode:"",resulttime:"", errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""},
       ],
       param:{num:1,interval:1000},
       statusMessage:"",
@@ -279,7 +290,7 @@
     methods:{
       // Add relay setting
       addRelay: function(){
-        this.relays.push({id: this.id, url: "", editMemo:false, memo:"", delay: "", fibonacci: 0, error: false, code: 500, timeout: false, resultcode:"",resulttime:"",errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
+        this.relays.push({id: this.id, url: "", editMemo:false, memo:"", delay: "", fibonacci: 0, shutdown:false, error: false, code: 500, timeout: false, resultcode:"",resulttime:"",errorresult:"", setheaders:false, headers:'{"Content-Type":"application/json"}', apicalls:0, apicallmethod:[], apicallurls:[], apicallheaders:[], apicallbody:[], apicalltimes:[], apicallresults:[], lognums:0, loglevels:[], logdetails:[], processenv:"", apiserchkeywords:[], processenvsearchkeyword:""})
         this.id++;
       },
       // Send request

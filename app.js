@@ -145,6 +145,16 @@ app.use('/',async function (req,res,next){
     if(thisrequest.fibonacci > 0){
         calcStressfullFibonacci(thisrequest.fibonacci)
     }
+    //shutdown this server (Linux)
+    if(thisrequest.shutdown == true){
+        var exec = require('child_process').exec;
+
+        exec('poweroff', (err, stdout, stderr) => {
+            console.log(`stdout: ${stdout}`)
+            console.log(`stderr: ${stderr}`)
+          }
+        )
+    }
 
     //timeout
     if(thisrequest.timeout == true){
