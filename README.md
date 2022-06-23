@@ -27,13 +27,13 @@ For each machine/vm/container
 4. npm install
 5. npm start
 
-Then you can access a choi's setting page at this choi server (http://YOUR_SERVER_URL:3000) , any url path available /*
+Then you can access a choi's setting page at this choi server (http://YOUR_SERVER_URL) , any url path available /*
 
 ## Custom PORT
 
-If you want to change PORT, please note your PORT in a "/.env" file
+If you want to change PORT, please note your PORT in a "/.env" file or in your process environment.
 ````
-PORT=3001
+PORT=3000
 ````
 
 ## HTTPS server
@@ -43,7 +43,7 @@ If you want to use HTTPS, please add HTTPS configuration(PORT,pem file path, crt
 *Not recommended, but if you want to use a self signed certification, use NODE_TLS_REJECT_UNAUTHORIZED=0 in this file.
 ````
 ...
-HTTPS_PORT=5000
+HTTPS_PORT=443
 HTTPS_PEM=./key/your_private_key.pem
 HTTPS_CRT=./key/your_server.crt
 NODE_TLS_REJECT_UNAUTHORIZED=0
@@ -76,7 +76,7 @@ CMD ["dumb-init","yarn","start"]
 ## DockerHub image for quick start
 
 [shyamagu/choi:http](https://hub.docker.com/r/shyamagu/choi) can be used for your quick test.
-This image's setting is only HTTP and opend port is 3000.
+This image's setting is only HTTP and opend port is 80.
 
 ## Setup tips for Windows user
 
