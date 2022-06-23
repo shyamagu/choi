@@ -149,7 +149,7 @@ app.use('/',async function (req,res,next){
     if(thisrequest.shutdown == true){
         var exec = require('child_process').exec;
 
-        exec('poweroff', (err, stdout, stderr) => {
+        exec('/sbin/poweroff', (err, stdout, stderr) => {
             console.log(`stdout: ${stdout}`)
             console.log(`stderr: ${stderr}`)
           }
