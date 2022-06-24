@@ -16,9 +16,12 @@ And "choi" shows an each latency of your network like below.
 
 ![choi sample latency graph](./choi_latency_sample.png)
 
+## DockerHub image for choi quick start
 
+[shyamagu/choi:http](https://hub.docker.com/r/shyamagu/choi) can be used for your quick test.
+This image's setting is only HTTP and port:80.
 
-# How to setup
+# How to setup (Not use DockerHub image)
 
 For each machine/vm/container
 1. install nodejs
@@ -72,11 +75,6 @@ EXPOSE 3000
 
 CMD ["dumb-init","yarn","start"]
 ````
-
-## DockerHub image for quick start
-
-[shyamagu/choi:http](https://hub.docker.com/r/shyamagu/choi) can be used for your quick test.
-This image's setting is only HTTP and opend port is 80.
 
 ## Setup tips for Windows user
 
