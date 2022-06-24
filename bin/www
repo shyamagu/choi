@@ -7,6 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('choi:server');
 var http = require('http');
+let appInsights = require("applicationinsights");
+appInsights.setup(process.env.INSTRUMENTATIONKEY).start();
 
 /**
  * Get port from environment and store in Express.
