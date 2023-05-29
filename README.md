@@ -24,8 +24,9 @@ For each machine/vm/container
 1. install nodejs
 2. git clone -b release https://github.com/shyamagu/choi.git
 3. cd /choi
-4. npm install
-5. npm start
+4. replace `INSTRUMENTATIONKEY` value in `.env` file with the connection string from the Application Insights
+5. npm install
+6. npm start
 
 Then you can access a choi's setting page at this choi server (http://YOUR_SERVER_URL) , any url path available /*
 
