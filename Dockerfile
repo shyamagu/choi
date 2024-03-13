@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:20-alpine
 
 # install Git & Bash
 RUN apk update && apk add git && apk add bash && apk add dumb-init
